@@ -1,0 +1,52 @@
+{
+  "id": "x-php",
+  "titre": "Exemple : PHP exécuté",
+  "sousTitre": "Unité de test du module code-php (tools/exemples/php)",
+  "objectif": "Vérifier que le PHP s'exécute, que ses tests passent et que ses erreurs sont expliquées.",
+  "icone": "<?",
+  "fiches": [
+    { "id": "x-php-echo", "titre": "echo : afficher", "icone": "echo", "resume": "`echo` envoie du texte dans la page.",
+      "texte": "Le point `.` colle deux textes.", "exemples": [{ "code": ["$plat = \"risotto\";", "echo \"Plat : \" . $plat;"] }] },
+    { "id": "x-php-requete", "titre": "La requête : $_POST", "icone": "POST", "resume": "Les champs envoyés par un formulaire arrivent dans `$_POST`.",
+      "texte": "Toujours passer une saisie dans `htmlspecialchars` avant de l'afficher." }
+  ],
+  "lecons": [
+    { "id": "x-php-l1", "titre": "Afficher et calculer", "duree": 5, "notions": ["x-php-echo"],
+      "cartes": [
+        { "titre": "Le serveur envoie le résultat", "texte": "Exécute : le navigateur ne reçoit que le HTML.", "code": ["<?php $plat = \"lasagnes\"; ?>", "<h1>Plat du jour : <?= $plat ?></h1>"], "fiche": "x-php-echo" }
+      ],
+      "exercices": [
+        { "id": "x-php-l1-e1", "type": "predire", "notions": ["x-php-echo"], "question": "Qu'affiche ce code ?", "code": ["$prix = 4;", "echo $prix * 3;"], "explication": "4 × 3 = 12." },
+        { "id": "x-php-l1-e2", "type": "trous", "notions": ["x-php-echo"], "question": "Complète : crée la constante `VAT`, puis affiche la TVA sur 100 francs.",
+          "code": ["___ VAT = 0.081;", "$price = 100;", "echo $price * ___;"], "solution": ["const", "VAT"], "tests": { "cas": [{ "sortie": ["8.1"] }] },
+          "indices": ["Le mot-clé qui crée une constante.", "Une constante s'utilise sans `$`."],
+          "erreursTypiques": [{ "trous": ["const", "$VAT"], "attendu": "echec", "diagnostic": "variable-inconnue" }], "explication": "Une constante s'utilise par son nom, sans `$`." },
+        { "id": "x-php-l1-e3", "type": "ecrire", "notions": ["x-php-echo"], "question": "Crée `$greeting` qui contient « Bonjour Ada, tu as 36 ans » avec `$name` et `$age`, puis affiche-la.",
+          "donnees": { "name": "Ada", "age": 36 }, "depart": [""],
+          "tests": { "cas": [ { "titre": "Ada, 36 ans", "variables": { "greeting": "Bonjour Ada, tu as 36 ans" }, "sortie": ["Bonjour Ada, tu as 36 ans"] },
+                              { "titre": "Autres données", "donnees": { "name": "Linus", "age": 54 }, "variables": { "greeting": "Bonjour Linus, tu as 54 ans" } } ] },
+          "indices": ["Colle les morceaux avec le point."],
+          "solution": ["$greeting = \"Bonjour \" . $name . \", tu as \" . $age . \" ans\";", "echo $greeting;"],
+          "erreursTypiques": [ { "code": "$greeting = \"Bonjour \" + $name + \", tu as \" + $age + \" ans\";\necho $greeting;", "attendu": "erreur", "diagnostic": "concat-plus" },
+                               { "code": "$greeting = \"Bonjour Ada, tu as 36 ans\";\necho $greeting;", "attendu": "echec" } ],
+          "explication": "Avec `.`, la phrase suit les données." },
+        { "id": "x-php-l1-e4", "type": "bug", "notions": ["x-php-echo"], "question": "Quelle ligne plante ?", "code": ["$total = 3;", "echo \"Total : \" + $total;"], "ligne": 2,
+          "choix": ["En PHP, on colle des textes avec `.`, pas `+`", "Il manque `<?php`", "`$total` n'existe pas"], "bonne": 0, "explication": "`+` additionne des nombres ; `.` colle des textes." }
+      ] }
+  ],
+  "jeux": [],
+  "quiz": { "titre": "Quiz", "questions": [
+    { "id": "x-php-quiz-q1", "type": "qcm", "notions": ["x-php-echo"], "question": "Quel opérateur colle deux textes en PHP ?", "choix": [".", "+", "&"], "bonne": 0, "mono": true, "explication": "Le point." }
+  ] },
+  "boss": [
+    { "id": "x-php-b1", "titre": "Le formulaire de la ville", "source": "Exemple du modèle", "notions": ["x-php-requete"],
+      "enonce": "Si le formulaire est envoyé en POST, affiche « Bienvenue <ville> ! » avec le champ `city` (passé à `htmlspecialchars`) ; sinon, affiche « Choisis une ville ».",
+      "depart": [""], "requete": { "methode": "POST", "post": { "city": "Yverdon" } },
+      "tests": { "cas": [ { "titre": "Envoi : Yverdon", "requete": { "methode": "POST", "post": { "city": "Yverdon" } }, "sortie": ["Bienvenue Yverdon !"] },
+                          { "titre": "Première visite (GET)", "requete": { "methode": "GET" }, "sortie": ["Choisis une ville"] },
+                          { "titre": "Saisie piégée", "requete": { "methode": "POST", "post": { "city": "<b>Bulle</b>" } }, "neContientPas": ["<b>Bulle</b>"], "siEchec": "Passe la saisie dans `htmlspecialchars(…)`." } ] },
+      "indices": ["Teste `$_SERVER[\"REQUEST_METHOD\"] === \"POST\"`.", "Dans le `if`, lis `$_POST[\"city\"]`.", { "texte": "La structure :", "code": "if (___) {\n    echo \"Bienvenue \" . htmlspecialchars(___) . \" !\";\n} else {\n    echo \"Choisis une ville\";\n}" }],
+      "solution": ["if ($_SERVER[\"REQUEST_METHOD\"] === \"POST\") {", "    echo \"Bienvenue \" . htmlspecialchars($_POST[\"city\"]) . \" !\";", "} else {", "    echo \"Choisis une ville\";", "}"],
+      "erreursTypiques": [ { "code": "if ($_SERVER[\"REQUEST_METHOD\"] === \"POST\") {\n    echo \"Bienvenue \" . $_POST[\"city\"] . \" !\";\n} else {\n    echo \"Choisis une ville\";\n}", "attendu": "echec" } ] }
+  ]
+}
