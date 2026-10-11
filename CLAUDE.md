@@ -112,6 +112,7 @@ GitHub Actions (`.github/workflows/tests.yml`) lance les trois tests à chaque p
 - Mode Duolingo de Pampre : boutons « 3D », nœuds ronds en zigzag, feuille de correction verte / rouge qui monte du bas, mascotte du cours : une forme du catalogue (`MASCOTTES` dans `js/base.js` : œuf, éléphant, chouette, renard, goutte, livre), un accessoire (`ACCESSOIRES`), un « cadre » pour les cours de code, ou un dessin libre (`mascotte.fichier`). Catalogue en image : `docs/mascottes.png`. Ce qui est propre à un cours se décrit dans `config.json`, jamais en code dans `js/base.js`.
 - Jetons CSS dans `:root`, redéfinis pour le sombre dans `@media (prefers-color-scheme: dark)` **et** `:root[data-theme="dark"]` : toute nouvelle couleur doit exister dans les trois blocs (et `config.app.couleurs` a un bloc `clair` et un bloc `sombre`).
 - Appli installable : sur téléphone (jamais sur ordinateur ni en `?test`), une fenêtre propose l'ajout à l'écran d'accueil après la première leçon (invite native sur Android, mode d'emploi selon le navigateur sur iOS), puis 14 jours après chaque « plus tard » ; toujours accessible dans Profil.
+- Accueil : un clic sur la bannière d'une unité la replie (`ST.repliees` ; sans choix de l'élève, une unité terminée est repliée), et le bouton flottant « Reprendre » apparaît quand l'étape en cours est hors de l'écran (il y ramène et déplie son unité).
 - Mobile d'abord (colonne de 680 px), zones tactiles ≥ 44 px, police de code à 16 px dans l'éditeur au doigt, pas de ligatures dans le code.
 
 ## Limites connues

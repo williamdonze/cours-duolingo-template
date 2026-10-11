@@ -81,6 +81,7 @@ const I = {
   ajouter:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>`,
   points:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="19" r="2.2" fill="currentColor"/></svg>`,
   pointsH:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>`,
+  chevron:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   menu:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`,
   reset:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg>`
 };
@@ -211,7 +212,7 @@ I.logo = logoSVG();
 /* ---------------- sauvegarde ---------------- */
 // La progression est indexée par des identifiants explicites (jamais par position) : ajouter du contenu ne perd rien.
 function freshState(){
-  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null, installPlusTard:null, installJamais:false, projet:{} };
+  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null, installPlusTard:null, installJamais:false, projet:{}, repliees:{} };
 }
 function normaliser(o){
   const s = freshState();
@@ -220,7 +221,7 @@ function normaliser(o){
   if (!obj(o)) return s;
   s.xp = Math.max(0, num(o.xp, 0));
   if (obj(o.streak)) s.streak = { count:Math.max(0, num(o.streak.count, 0)), last:typeof o.streak.last === "string" ? o.streak.last : null };
-  for (const k of ["days", "done", "games", "badges", "daily", "fiches", "ouvertes", "brouillons", "projet"]) if (obj(o[k])) s[k] = o[k];
+  for (const k of ["days", "done", "games", "badges", "daily", "fiches", "ouvertes", "brouillons", "projet", "repliees"]) if (obj(o[k])) s[k] = o[k];
   for (const k of ["quiz", "boss", "notions"]) if (obj(o[k])) s[k] = Object.fromEntries(Object.entries(o[k]).filter(([, q]) => obj(q)));
   if (Array.isArray(o.erreurs)) s.erreurs = o.erreurs.filter(x => typeof x === "string").slice(-80);
   if (obj(o.stats)) for (const k of Object.keys(s.stats)) s.stats[k] = Math.max(0, num(o.stats[k], 0));

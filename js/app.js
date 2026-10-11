@@ -287,8 +287,15 @@ function viewHome(){
   D.unites.forEach((u, ui) => {
     const ouverte = uniteOuverte(u);
     const [c1, c2] = COULEURS_UNITE[ui % COULEURS_UNITE.length];
-    const sec = h(`<section class="unit ${ouverte ? "" : "locked"}"><div class="unit-head" ${ouverte ? `style="--u:${c1};--ud:${c2}"` : ""}><div><div class="num">Unité ${u.numero}${u.sousTitre ? ` · ${esc(u.sousTitre)}` : ""}</div><h2>${esc(u.titre)}</h2><p>${esc(u.objectif || "")}</p></div><div class="uico" aria-hidden="true">${ouverte ? esc(u.icone || "{ }") : I.lock}</div></div></section>`);
+    // une unité ouverte se replie d'un clic sur sa bannière (ST.repliees) ; sans choix de l'élève, une unité terminée est repliée
+    const faits = u.parcours.filter(s => noeudFait(u, s)).length, terminee = faits === u.parcours.length;
+    const repliee = ouverte && (ST.repliees[u.id] ?? terminee);
+    const sec = h(`<section class="unit ${ouverte ? "" : "locked"} ${repliee ? "repliee" : ""}" data-unite="${esc(u.id)}"><div class="unit-head" ${ouverte ? `style="--u:${c1};--ud:${c2}" role="button" tabindex="0" aria-expanded="${!repliee}" aria-label="Unité ${u.numero} : ${esc(u.titre)}, ${faits} étapes sur ${u.parcours.length}. ${repliee ? "Déplier" : "Replier"}"` : ""}><div><div class="num">Unité ${u.numero}${u.sousTitre ? ` · ${esc(u.sousTitre)}` : ""}</div><h2>${esc(u.titre)}</h2><p>${esc(u.objectif || "")}</p>${ouverte ? `<span class="avancement">${terminee ? `${I.check} Terminée` : `${faits}/${u.parcours.length}`}<span class="chevron">${I.chevron}</span></span>` : ""}</div><div class="uico" aria-hidden="true">${ouverte ? esc(u.icone || "{ }") : I.lock}</div></div></section>`);
     if (!ouverte) { sec.appendChild(h(`<p class="unit-note">Valide le quiz de l'unité ${D.unites[ui - 1].numero} pour ouvrir celle-ci.</p>`)); el.appendChild(sec); return; }
+    const tete = sec.querySelector(".unit-head");
+    const basculer = () => { const r = !sec.classList.contains("repliee"); ST.repliees[u.id] = r; save(); sec.classList.toggle("repliee", r); tete.setAttribute("aria-expanded", String(!r)); tete.setAttribute("aria-label", tete.getAttribute("aria-label").replace(/(Déplier|Replier)$/, r ? "Déplier" : "Replier")); majReprendre?.(); };
+    tete.onclick = basculer;
+    tete.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); basculer(); } };
     const path = h(`<div class="path"></div>`);
     u.parcours.forEach((step, i) => {
       const fait = noeudFait(u, step);
@@ -313,6 +320,34 @@ function viewHome(){
     });
     sec.appendChild(path); el.appendChild(sec);
   });
+  // bouton « Reprendre » : visible quand l'étape en cours est hors de l'écran (ou dans une unité repliée) ; il y ramène
+  const cible = el.querySelector(".node-wrap.has-start");
+  var majReprendre = null;
+  if (cible) {
+    const btn = h(`<button type="button" class="aller-courant" hidden>${I.chevron}Reprendre</button>`);
+    el.appendChild(btn);
+    let visible = false;
+    // flèche vers le haut ou le bas selon la position réelle de l'étape (recalculée au défilement)
+    majReprendre = () => {
+      const sec = cible.closest(".unit"), repliee = sec.classList.contains("repliee");
+      btn.hidden = visible && !repliee;
+      const r = (repliee ? sec : cible).getBoundingClientRect();
+      btn.classList.toggle("haut", r.bottom < 0);
+    };
+    let attente = false;
+    const auDefilement = () => { if (!cible.isConnected) return removeEventListener("scroll", auDefilement); if (!attente) { attente = true; requestAnimationFrame(() => { attente = false; if (!btn.hidden) majReprendre(); }); } };
+    addEventListener("scroll", auDefilement, { passive:true });
+    if ("IntersectionObserver" in window) {
+      const obs = new IntersectionObserver(([e]) => { if (!cible.isConnected) return obs.disconnect(); visible = e.isIntersecting; majReprendre(); });
+      obs.observe(cible);
+    }
+    btn.onclick = () => {
+      const sec = cible.closest(".unit");
+      if (sec.classList.contains("repliee")) sec.querySelector(".unit-head").click();
+      cible.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+      setTimeout(() => cible.querySelector(".node")?.focus({ preventScroll:true }), 400);
+    };
+  }
   if (D.config.aVenir?.length) el.appendChild(h(`<section class="unit"><h2 style="font-size:22px">Bientôt</h2><p class="muted" style="margin-bottom:10px">Les prochaines unités suivront les TP de ton cours, semaine après semaine.</p>${D.config.aVenir.map(a => `<div class="fiche-lien" style="border-style:dashed"><span class="ic">${esc(a.icone || "…")}</span><div><b>${esc(a.titre)}</b><span>${esc(a.resume || "")}</span></div></div>`).join("")}</section>`));
   return el;
 }
