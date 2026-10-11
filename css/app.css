@@ -509,6 +509,21 @@ textarea.save{width:100%;min-height:110px;border:2px solid var(--line);border-ra
 @media (min-width:640px){.modal-bg{place-items:center}.modal{border-radius:24px}}
 .modal h3{font-size:22px}
 .modal .row-btns .btn{flex:1}
+/* appli sur l'écran d'accueil : fenêtre et mode d'emploi */
+.inst-tete{display:flex;gap:12px;align-items:center}
+.inst-tete .mascot{width:64px;height:64px;margin:0}
+.etapes{list-style:none;padding:0;margin:0;display:grid;gap:12px;counter-reset:etape}
+.etapes li{counter-increment:etape;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;line-height:1.45}
+.etapes li::before{content:counter(etape);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--prim-btn);color:var(--on-prim);font-weight:800}
+.pic{display:inline-grid;place-items:center;width:26px;height:26px;margin:0 2px;vertical-align:-7px;border:1.5px solid var(--line);border-radius:7px;background:var(--paper);color:var(--prim-ink)}
+.pic svg{width:17px;height:17px}
+.autres{font-size:14px;color:var(--muted)}
+.autres summary{font-weight:800;color:var(--ink);cursor:pointer;min-height:44px;display:flex;align-items:center}
+.autres .etapes{margin-bottom:8px}
+.autres dl{margin:4px 0 0;display:grid;gap:8px}
+.autres dt{font-weight:800;color:var(--ink)}
+.autres dd{margin:0}
+.lien-discret{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;font-weight:700;text-decoration:underline;min-height:44px;justify-self:center}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* code à trous : champs dans le code */

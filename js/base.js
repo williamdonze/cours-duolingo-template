@@ -74,6 +74,12 @@ const I = {
   wallet:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="3" fill="currentColor"/><path d="M4 6l11-3 2 3" fill="currentColor" opacity=".6"/><rect x="15" y="11" width="7" height="4" rx="2" fill="rgba(255,255,255,.6)"/></svg>`,
   bug:`<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="14" rx="5.5" ry="7" fill="currentColor"/><circle cx="12" cy="6" r="3" fill="currentColor"/><path d="M6 10l-3-2M18 10l3-2M6 15H2M18 15h4M7 19l-3 2M17 19l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 9v12" stroke="rgba(0,0,0,.3)" stroke-width="1.4"/></svg>`,
   shuffle:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/></svg>`,
+  phone:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10.5 18.5h3"/><path d="M12 7v6M9 10h6" stroke-width="2.6"/></svg>`,
+  partager:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9H6v12h12V9h-2M12 3v12M8 7l4-4 4 4"/></svg>`,
+  ajouter:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/></svg>`,
+  points:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="19" r="2.2" fill="currentColor"/></svg>`,
+  pointsH:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>`,
+  menu:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`,
   reset:`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg>`
 };
 const ICON_BY_NAME = { etoile:I.star, flamme:I.flame, medaille:I.medal, trophee:I.trophy, boss:I.boss, oeuf:I.egg, livre:I.book, cible:I.target, accolades:I.braces, porte:I.wallet, bug:I.bug, terminal:I.terminal, melange:I.shuffle };
@@ -109,7 +115,7 @@ I.logo = logoSVG();
 /* ---------------- sauvegarde ---------------- */
 // La progression est indexée par des identifiants explicites (jamais par position) : ajouter du contenu ne perd rien.
 function freshState(){
-  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null };
+  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null, installPlusTard:null, installJamais:false };
 }
 function normaliser(o){
   const s = freshState();
@@ -123,6 +129,8 @@ function normaliser(o){
   if (Array.isArray(o.erreurs)) s.erreurs = o.erreurs.filter(x => typeof x === "string").slice(-80);
   if (obj(o.stats)) for (const k of Object.keys(s.stats)) s.stats[k] = Math.max(0, num(o.stats[k], 0));
   if (o.theme === "light" || o.theme === "dark") s.theme = o.theme;
+  if (typeof o.installPlusTard === "string") s.installPlusTard = o.installPlusTard;
+  s.installJamais = o.installJamais === true;
   return s;
 }
 function loadState(){
@@ -226,6 +234,93 @@ function confirmBox(title, text, okLabel, onOk, danger = true){
   document.addEventListener("keydown", echap, true);
   m.addEventListener("click", e => { const a = e.target.closest("[data-a]")?.dataset.a; if (a === "ok") { fermer(); onOk(); } else if (a === "no" || e.target === m) fermer(); });
   document.body.appendChild(m); majCalques(); m.querySelector('[data-a="no"]').focus();
+}
+/* ---------------- appli sur l'écran d'accueil (repris de Pampre) ---------------- */
+// Android (Chrome, Edge, Samsung Internet) : invite native, reçue par « beforeinstallprompt ».
+// iOS et les autres navigateurs : pas d'invite programmable, on affiche le mode d'emploi du navigateur détecté.
+// Proposé uniquement sur téléphone et tablette, jamais sur ordinateur, dans l'appli déjà installée ni en mode ?test.
+let INVITE_INSTALL = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); INVITE_INSTALL = e;
+  document.querySelectorAll("[data-installer]").forEach(b => b.textContent = "Installer");
+});
+window.addEventListener("appinstalled", () => {
+  INVITE_INSTALL = null; document.querySelector(".modal.installer")?.closest(".modal-bg")?.remove(); majCalques();
+  toast(I.check, `${APP.nom} est installé`, `Retrouve ${APP.mascotte.nom} sur ton écran d'accueil.`);
+});
+function appareil(){
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);   // iPadOS se présente comme un Mac
+  const android = !ios && /Android/.test(ua);
+  const v = ua.match(/OS (\d+)_(\d+)/); const versionIOS = v ? +v[1] + +v[2] / 100 : 99;
+  return {
+    ios, android, mobile: ios || android,
+    installe: matchMedia("(display-mode: standalone)").matches || matchMedia("(display-mode: fullscreen)").matches || navigator.standalone === true,
+    // navigateurs intégrés aux applis (Instagram, Facebook, Messenger, TikTok…) : pas d'ajout à l'écran d'accueil
+    integre: /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|Snapchat|TikTok|musical_ly|Bytedance|LinkedInApp|Pinterest|Line\//.test(ua),
+    nav: ios ? (/CriOS/.test(ua) ? "chrome" : /FxiOS/.test(ua) ? "firefox" : /EdgiOS/.test(ua) ? "edge" : "safari")
+      : /SamsungBrowser/.test(ua) ? "samsung" : /Firefox/.test(ua) ? "firefox" : /OPR\//.test(ua) ? "opera" : /EdgA/.test(ua) ? "edge" : "chrome",
+    ancienIOS: ios && versionIOS < 16.04   // avant iOS 16.4, seul Safari sait ajouter à l'écran d'accueil
+  };
+}
+const installPossible = () => { const a = appareil(); return a.mobile && !a.installe && !/[?&]test\b/.test(location.search); };
+// fenêtre automatique : après la première leçon, puis 14 jours après chaque « plus tard », jusqu'au « ne plus proposer »
+const proposerInstall = () => installPossible() && ST.xp > 0 && !ST.installJamais && !(ST.installPlusTard && dayDiff(ST.installPlusTard, todayStr()) < 14);
+const pic = n => `<span class="pic">${I[n]}</span>`;
+// mode d'emploi : liste d'étapes (HTML) selon l'appareil
+function etapesInstall(a){
+  const m = esc(APP.mascotte.nom);
+  if (a.integre) return [`Cette page est ouverte dans une appli (Instagram, Facebook…), qui ne permet pas l'ajout à l'écran d'accueil.`,
+    `Touche ${pic("pointsH")} ou ${pic("points")} puis « Ouvrir dans ${a.ios ? "Safari" : "le navigateur"} ».`, `Reviens ici : le mode d'emploi s'adaptera à ton navigateur.`];
+  if (a.ios && a.nav !== "safari" && a.ancienIOS) return [`Sur ta version d'iOS, seul Safari sait ajouter un site à l'écran d'accueil.`, `Ouvre cette page dans Safari, puis reviens ici.`];
+  if (a.ios && a.nav === "safari") return [
+    `Touche le bouton Partager ${pic("partager")} de Safari : en bas de l'écran sur iPhone, en haut sur iPad. S'il n'apparaît pas, il est dans le menu ${pic("pointsH")} à côté de l'adresse.`,
+    `Fais défiler et choisis « Sur l'écran d'accueil » ${pic("ajouter")} (selon la version : « Ajouter à l'écran d'accueil », parfois sous « Plus »).`,
+    `Touche « Ajouter » en haut à droite. ${m} rejoint tes applis.`];
+  if (a.ios) return [
+    a.nav === "chrome" ? `Touche le bouton Partager ${pic("partager")} à droite de la barre d'adresse.` : `Ouvre le menu ${pic("menu")} ou ${pic("pointsH")} du navigateur, puis « Partager » ${pic("partager")}.`,
+    `Choisis « Sur l'écran d'accueil » (ou « Ajouter à l'écran d'accueil ») ${pic("ajouter")}.`,
+    `Touche « Ajouter ». ${m} rejoint tes applis.`];
+  if (a.nav === "samsung") return [`Touche le menu ${pic("menu")} en bas à droite.`, `Choisis « Ajouter la page à », puis « Écran d'accueil ».`, `Confirme avec « Ajouter ».`];
+  if (a.nav === "firefox") return [`Touche le menu ${pic("points")} (en haut ou en bas à droite).`, `Choisis « Ajouter à l'écran d'accueil » (ou « Installer »).`, `Confirme : l'icône apparaît avec tes applis.`];
+  if (a.nav === "opera") return [`Touche le menu ${pic("points")} en haut à droite.`, `Choisis « Ajouter à… », puis « Écran d'accueil ».`, `Confirme avec « Ajouter ».`];
+  if (a.nav === "edge") return [`Touche le menu ${pic("menu")} en bas de l'écran.`, `Choisis « Ajouter au téléphone » (ou « Ajouter à l'écran d'accueil »).`, `Confirme avec « Installer ».`];
+  return [`Touche le menu ${pic("points")} en haut à droite de Chrome.`, `Choisis « Ajouter à l'écran d'accueil » ou « Installer l'application ».`, `Confirme avec « Installer ».`];
+}
+// la fenêtre : bouton « Installer » quand le navigateur offre l'invite native, sinon le mode d'emploi ; auto = proposée d'elle-même
+function aideInstall(auto = false){
+  const a = appareil(), nom = esc(APP.nom);
+  if (auto) { ST.installPlusTard = todayStr(); save(); }   // fermer la fenêtre vaut « plus tard »
+  const autres = `<details class="autres"><summary>Sur un autre appareil</summary><dl>
+    <dt>iPhone, iPad (Safari)</dt><dd>Partager ${pic("partager")} → « Sur l'écran d'accueil » → Ajouter.</dd>
+    <dt>iPhone, iPad (Chrome, Edge, Firefox ; iOS 16.4 ou plus)</dt><dd>Partager ${pic("partager")} → « Sur l'écran d'accueil ».</dd>
+    <dt>Android (Chrome, Edge)</dt><dd>Bouton « Installer » de ${nom}, ou menu ${pic("points")} → « Ajouter à l'écran d'accueil ».</dd>
+    <dt>Android (Samsung Internet)</dt><dd>Menu ${pic("menu")} → « Ajouter la page à » → « Écran d'accueil ».</dd>
+    <dt>Android (Firefox)</dt><dd>Menu ${pic("points")} → « Ajouter à l'écran d'accueil ».</dd></dl></details>`;
+  const etapes = `<ol class="etapes">${etapesInstall(a).map(e => `<li><span>${e}</span></li>`).join("")}</ol>`;
+  const m = h(`<div class="modal-bg"><div class="modal installer" role="dialog" aria-modal="true" aria-labelledby="inst-titre">
+    <div class="inst-tete">${mascot("wow")}<h3 id="inst-titre">${nom} sur ton écran d'accueil</h3></div>
+    <p class="muted">Une icône comme une vraie appli : ${nom} s'ouvre en plein écran, sans barre d'adresse, même hors connexion. Rien à télécharger dans un store, ta progression reste la même.</p>
+    ${INVITE_INSTALL ? `<details class="autres"><summary>Le faire à la main</summary>${etapes}</details>` : etapes}${autres}
+    <div class="row-btns">${auto ? `<button class="btn ghost" data-a="plus-tard">Plus tard</button>` : ""}<button class="btn" data-a="${INVITE_INSTALL ? "installer" : "ok"}">${INVITE_INSTALL ? "Installer" : "Compris"}</button></div>
+    ${auto ? `<button type="button" class="lien-discret" data-a="jamais">Ne plus me le proposer</button>` : ""}</div></div>`);
+  const avant = document.activeElement;
+  const fermer = () => { document.removeEventListener("keydown", echap, true); m.remove(); majCalques(); if (avant?.isConnected) avant.focus({preventScroll:true}); };
+  const echap = e => { if (e.key === "Escape") { e.stopPropagation(); fermer(); } };
+  document.addEventListener("keydown", echap, true);
+  m.addEventListener("click", e => {
+    const act = e.target.closest("[data-a]")?.dataset.a;
+    if (act === "installer") { fermer(); installer(); }
+    else if (act === "jamais") { ST.installJamais = true; save(); fermer(); toast(I.phone, "C'est noté", "Tu retrouveras le mode d'emploi dans Profil."); }
+    else if (act || e.target === m) fermer();
+  });
+  document.body.appendChild(m); majCalques(); m.querySelector(".row-btns .btn:last-child").focus();
+}
+async function installer(){
+  if (!INVITE_INSTALL) return aideInstall();
+  const invite = INVITE_INSTALL; INVITE_INSTALL = null;   // une invite ne sert qu'une fois
+  try { await invite.prompt(); const { outcome } = await invite.userChoice; if (outcome !== "accepted") document.querySelectorAll("[data-installer]").forEach(b => b.textContent = b.dataset.aide); }
+  catch(e) { aideInstall(); }
 }
 function confetti(){
   const box = h(`<div class="confetti"></div>`); const cols = ["var(--prim)","var(--gold)","var(--ok)","var(--teal)","#ff9fb4"];

@@ -277,6 +277,7 @@ function viewHome(){
   const daily = h(`<div class="panel daily ${done ? "done" : ""}"><div class="ico">${done ? I.check : I.star}</div><div class="txt"><h3>Défi du jour</h3><p>${done ? "Relevé ! Reviens demain pour un nouveau défi." : dues.length ? `${pluriel(dues.length, "notion")} à revoir aujourd'hui, en priorité. +30 XP.` : "6 questions de révision sur ce que tu as appris. +30 XP."}</p></div><button class="btn ${done ? "ghost" : "gold"} small" data-daily>${done ? "Rejouer" : "Jouer"}</button></div>`);
   daily.querySelector("[data-daily]").onclick = startDaily;
   el.appendChild(daily);
+  if (proposerInstall()) setTimeout(() => { if (proposerInstall() && VIEW === "home" && !document.querySelector("body > .session, body > .modal-bg, body > .drawer")) aideInstall(true); }, 900);
   let currentFound = false;
   D.unites.forEach((u, ui) => {
     const ouverte = uniteOuverte(u);
@@ -391,7 +392,7 @@ function viewProfil(){
     <div class="kpi" style="color:var(--prim-ink)">${I.lesson}<div><b style="color:var(--ink)">${lecons}</b><span>leçons terminées</span></div></div>
     <div class="kpi" style="color:var(--gold-deep)">${I.trophy}<div><b style="color:var(--ink)">${Object.values(ST.quiz).filter(q => q.passed).length}/${D.unites.length}</b><span>unités validées</span></div></div>
     <div class="kpi" style="color:#C2410C">${I.boss}<div><b style="color:var(--ink)">${bossFaits}/${bossTotal}</b><span>boss vaincus</span></div></div>
-    <div class="kpi" style="color:var(--ok-ink)">${I.terminal}<div><b style="color:var(--ink)">${ST.stats.codes}</b><span>codes qui passent les tests</span></div></div></div>`));
+    ${aModule("code-js") ? `<div class="kpi" style="color:var(--ok-ink)">${I.terminal}<div><b style="color:var(--ink)">${ST.stats.codes}</b><span>codes qui passent les tests</span></div></div>` : ""}</div>`));
   const notions = Object.entries(ST.notions).filter(([id]) => FICHES[id]);
   if (notions.length) el.appendChild(h(`<div><h2 class="sec-title">Tes notions</h2><p class="muted" style="font-size:14px">5 cases vertes : la notion est solide (révisée de plus en plus rarement). Une erreur la ramène à 1 case.</p><div class="notions">${notions.sort((a, b) => a[1].b - b[1].b).map(([id, n]) => `<div class="notion"><button type="button" class="fl nm" data-fiche="${esc(id)}" style="text-align:left">${esc(FICHES[id].titre)}</button><span class="bx" aria-label="Niveau ${n.b} sur 5">${[1,2,3,4,5].map(k => `<i class="${k <= n.b ? "on" : ""}"></i>`).join("")}</span></div>`).join("")}</div></div>`));
   const badges = tousLesBadges();
@@ -400,6 +401,14 @@ function viewProfil(){
   const theme = h(`<div style="margin-bottom:26px"><h2 class="sec-title">Apparence</h2><div class="seg" role="group" aria-label="Thème">${[["auto","Auto"],["light","Clair"],["dark","Sombre"]].map(([k, n]) => `<button data-th="${k}" aria-pressed="${(ST.theme || "auto") === k}">${n}</button>`).join("")}</div></div>`);
   theme.onclick = e => { const b = e.target.closest("[data-th]"); if (!b) return; ST.theme = b.dataset.th === "auto" ? null : b.dataset.th; applyTheme(); save(); render(); };
   el.appendChild(theme);
+  const ap = appareil();
+  if (ap.mobile) {
+    const inst = h(`<div style="margin-bottom:26px"><h2 class="sec-title">Appli sur l'écran d'accueil</h2>${ap.installe
+      ? `<p class="muted" style="font-size:14px">C'est fait : tu utilises ${esc(APP.nom)} comme une appli.</p>`
+      : `<p class="muted" style="font-size:14px;margin-bottom:10px">Une icône sur ton écran d'accueil, ${esc(APP.nom)} en plein écran, même hors connexion.</p><button class="btn small" data-installer data-aide="Comment faire ?">${INVITE_INSTALL ? "Installer" : "Comment faire ?"}</button>`}</div>`);
+    inst.querySelector("[data-installer]")?.addEventListener("click", installer);
+    el.appendChild(inst);
+  }
   const sv = h(`<div class="panel"><h2 class="sec-title">Ta sauvegarde</h2><p class="muted" style="font-size:14px">Ta progression est enregistrée dans ce navigateur, sur cet appareil. Pour la transférer (téléphone ↔ ordinateur), copie ce code puis colle-le là-bas dans le champ ci-dessous.</p>
     <textarea class="save" id="save-out" readonly aria-label="Code de sauvegarde"></textarea>
     <div class="row-btns"><button class="btn small" data-a="copy">Copier le code</button></div>

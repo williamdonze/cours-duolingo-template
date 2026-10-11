@@ -10,7 +10,8 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] Commentaire de `sw.js` (plus de « ProgWeb 2 »)
 
 ## Lot 2 — appli sur l'écran d'accueil
-- [ ] Reprendre de Pampre (`index.html`, « appli sur l'écran d'accueil ») : invite native Android (`beforeinstallprompt`), mode d'emploi iOS selon le navigateur et la version, navigateurs intégrés (Instagram…), Samsung Internet, rien sur ordinateur ni dans l'appli installée ; proposé en fenêtre après la première leçon, et toujours accessible dans le profil
+- [x] Reprendre de Pampre (`index.html`, « appli sur l'écran d'accueil ») : invite native Android (`beforeinstallprompt`), mode d'emploi iOS selon le navigateur et la version, navigateurs intégrés (Instagram…), Samsung Internet, rien sur ordinateur ni dans l'appli installée ; proposé en fenêtre après la première leçon (puis 14 jours après un « plus tard », jusqu'à « ne plus me le proposer »), et toujours accessible dans le profil
+- [x] Profil : le compteur « codes qui passent les tests » seulement avec le module code-js
 
 ## Lot 3 — compétences et documents
 - [ ] `/nouveau-cours` : toutes les questions en une fois au début (nom, mascotte, couleur, projet, examen, difficultés, niveau)
