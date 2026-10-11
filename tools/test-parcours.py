@@ -73,10 +73,21 @@ try:
         pg.on("console", lambda m: m.type == "error" and erreurs_js.append(m.text))
         exemple(pg, args.exemple)
         pg.goto(URL + "?test")
-        pg.wait_for_selector(".node")
+        pg.wait_for_selector(".unit-head")
         if args.captures:
             pg.screenshot(path=str(CAP / "00-accueil.png"))
 
+        # 0. accueil : replier / déplier une unité, et le bouton « Reprendre » qui ramène à l'étape en cours
+        pg.click(".unit:not(.locked) .unit-head")
+        if not pg.query_selector(".unit.repliee"): problemes.append("accueil : un clic sur la bannière ne replie pas l'unité")
+        if pg.evaluate("() => Object.values(ST.repliees).length") != 1: problemes.append("accueil : le repli n'est pas sauvegardé")
+        pg.wait_for_selector(".aller-courant:not([hidden])", timeout=3000)
+        pg.click(".aller-courant")
+        pg.wait_for_timeout(700)
+        if pg.query_selector(".unit.repliee .node-wrap.has-start"): problemes.append("« Reprendre » ne déplie pas l'unité en cours")
+        if not pg.evaluate("() => { const r = document.querySelector('.node-wrap.has-start').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }"):
+            problemes.append("« Reprendre » ne ramène pas à l'étape en cours")
+        pg.evaluate("() => { ST.repliees = {}; save(); window.scrollTo(0, 0); }")
         demo = pg.evaluate("() => aCode() ? LANG.demo || null : null")   # langage exécuté (js/langages.js) : son exercice de démonstration
         # 1. exercice de code raté puis corrigé (démonstration, indépendante du contenu ; le moteur peut démarrer : délais larges)
         if demo:
@@ -96,7 +107,7 @@ try:
             pg.click("[data-check]")
             pg.wait_for_selector(".sheet.ok", timeout=20000)
             pg.click("[data-cont]"); pg.click("[data-done]")
-            pg.wait_for_selector(".node")
+            pg.wait_for_selector(".unit-head")
 
         # 2. tout le parcours, nœud après nœud
         sessions = -1
@@ -105,7 +116,7 @@ try:
             pg.click(".node-wrap.has-start .node")
             jouer_session(pg, label)
             sessions += 1
-            pg.wait_for_selector(".node")
+            pg.wait_for_selector(".unit-head")
         etat = pg.evaluate("() => ({ xp: ST.xp, unites: D.unites.length, quiz: Object.values(ST.quiz).filter(q => q.passed).length, boss: Object.values(ST.boss).filter(b => b.fait).length, totalBoss: D.unites.reduce((s, u) => s + u.boss.length, 0), notions: Object.keys(ST.notions).length })")
         print(f"{sessions + 1} sessions jouées · {etat['xp']} XP · {etat['quiz']}/{etat['unites']} unités validées · {etat['boss']}/{etat['totalBoss']} boss · {etat['notions']} notions suivies")
         if etat["quiz"] != etat["unites"]: problemes.append("toutes les unités ne sont pas validées")
@@ -169,7 +180,7 @@ try:
             pg.click('.tab[data-go="home"]')
         # 5. la sauvegarde survit à un rechargement
         xp = pg.evaluate("() => ST.xp")
-        pg.reload(); pg.wait_for_selector(".node")
+        pg.reload(); pg.wait_for_selector(".unit-head")
         if pg.evaluate("() => ST.xp") != xp: problemes.append("la sauvegarde n'a pas survécu au rechargement")
         b.close()
         problemes += [f"erreur JavaScript : {e}" for e in erreurs_js]

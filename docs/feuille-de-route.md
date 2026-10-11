@@ -41,3 +41,7 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] Mode « code sans exécution » pour n'importe quel langage (prédire avec réponse écrite ou choix, ligne fautive, remettre dans l'ordre, pointer dans le code, QCM sur du code ; boss « étude de cas »)
 - [x] Mettre à jour `docs/modules.md`, `CLAUDE.md`, les tests du modèle (unités d'exemple `tools/exemples/php` et `java`, `--exemple` dans les trois outils, CI)
 - [x] Vérifié sur ProgServ2 : `mettre-a-jour-moteur` ne trouve plus rien de propre au cours, et ses trois tests passent avec le moteur du modèle (123 solutions, 257 erreurs typiques, 103 sessions)
+
+## Après les lots — retours sur l'appli
+- [x] Profil : la mascotte ne repousse plus le texte ; pointes de la bulle et de l'étiquette « Continuer » redessinées
+- [x] Accueil : replier une unité d'un clic sur sa bannière (unités terminées repliées par défaut), bouton « Reprendre » vers l'étape en cours
