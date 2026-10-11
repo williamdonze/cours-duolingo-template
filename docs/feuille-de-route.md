@@ -45,3 +45,4 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 ## Après les lots — retours sur l'appli
 - [x] Profil : la mascotte ne repousse plus le texte ; pointes de la bulle et de l'étiquette « Continuer » redessinées
 - [x] Accueil : replier une unité d'un clic sur sa bannière (unités terminées repliées par défaut), bouton « Reprendre » vers l'étape en cours
+- [x] Étape en cours : un boss sauté ne retient plus « Continuer » ni « Reprendre » ; un boss ne bloque plus les étapes qui le suivent
