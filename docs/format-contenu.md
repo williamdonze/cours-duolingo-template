@@ -35,7 +35,8 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
       "sombre": { "--prim": "#3FC1CC", "--prim-btn": "#178F99", "--prim-deep": "#0B5E66", "--prim-ink": "#7FDDE4", "--prim-soft": "#0F3236" }
     },
     "textes": { "jeuReussi": "tu lis le code comme un livre." },   // petites phrases propres au cours (facultatif)
-    "modules": ["code-js", "dom"]                // voir le tableau ci-dessous ; [] pour un cours sans code
+    "langage": "js",                             // langage du code : js (défaut), php, java, python, c, cpp, csharp, sql, bash (docs/modules.md)
+    "modules": ["code-js", "dom"]                // voir le tableau ci-dessous ; [] pour un cours sans code ou du code sans exécution
   },
   "seuilValidation": 0.8,                       // 80 % au quiz pour ouvrir l'unité suivante
   "unites": ["content/unites/u01-bases.json", …], // ordre du parcours ; GitHub Pages ne sait pas lister un dossier, d'où cette liste
@@ -82,9 +83,12 @@ Après avoir changé la section `app` : `python3 tools/configurer.py` (titre de 
 |---|---|
 | (aucun) | tous les types « sans code » (§ 6), les fiches, les jeux, les quiz, les boss « étude de cas » (§ 7) |
 | `code-js` | exercices de JavaScript exécutés dans un Web Worker (`trous`, `corriger`, `ecrire`, boss de code), types qui évaluent du JavaScript (`reduce-pas`, `filtre-visuel`, `map-visuel`, `types-chaine`, `fisher-yates`, `pointer-tableau`, `objet`, `predire` sans réponse écrite), boutons « Exécuter » des cartes et des fiches, onglet **Console** |
+| `code-php` | avec `"langage": "php"` : les exercices de code, `predire` et les exemples s'exécutent en PHP 8.3 (WebAssembly), avec une requête HTTP simulée (voir « Exercices en PHP », § 6) |
 | `dom` | pages web (`content/pages/`) : type `selecteur`, exercices et exemples avec `"dom"` (iframe isolée) |
 
-Ajouter un module (PHP, terminal simulé…) : voir `docs/modules.md`.
+**Code sans exécution** : un langage qu'aucun module n'exécute (`"langage": "java"`, `"modules": []`) est coloré, avec la barre de symboles du langage, mais rien ne s'exécute. Seuls les exercices qui n'exécutent pas le code sont permis : `predire` avec `reponse` ou `choix`, `bug`, `parsons`, `pointer-code`, `ordre`, `assoc`, `qcm` et `vf` avec `code`, et des boss « étude de cas » (voir `docs/modules.md` et l'exemple `tools/exemples/java/`).
+
+Ajouter un langage ou un module (Python, SQL, terminal simulé…) : voir `docs/modules.md`.
 
 **Ne jamais perdre la progression** : la sauvegarde est indexée par les identifiants (`id`) des unités, leçons, questions et boss, jamais par leur position. On peut ajouter, déplacer, insérer des unités sans risque. En revanche, **ne change jamais l'`id` d'un élément existant**. Une unité déjà ouverte par l'élève le reste, même si une unité est insérée avant elle.
 
@@ -311,6 +315,53 @@ Le Web Worker n'a pas de DOM. Avec un champ `dom`, le code de l'élève tourne d
 ```
 
 Les étapes s'enchaînent **dans la même page** (l'état d'une étape reste pour la suivante). Une étape sans `actions` vérifie l'état courant (la première : juste après le chargement du code). Le message affiché est le `siEchec` de la première étape ratée qui en a un. Pour un test « au hasard » (main tirée), répéter les clics dans un `script` et ranger les résultats dans `window` (voir le boss `u15-b1`).
+
+### Exercices en PHP (module `code-php`)
+
+Avec `"langage": "php"` et le module `code-php`, tous les exercices de code (`trous`, `corriger`, `ecrire`, `boss`, `predire`, exemples des cartes et des fiches) s'exécutent en **PHP 8.3** (WebAssembly, `js/php.js`), avec PDO et SQLite en mémoire. Le code de l'élève sans `<?php` est un extrait : la balise est ajoutée (les numéros de ligne restent ceux de l'élève). Chaque exécution est une **requête HTTP simulée**, neuve (fichiers, session, base remis à zéro).
+
+Champs propres à un exercice PHP :
+
+```jsonc
+{
+  "requete": { "methode": "POST", "get": {…}, "post": {…}, "cookies": {…}, "session": {…}, "entetes": {…} },   // la requête simulée
+  "fichiers": { "src/database.php": ["<?php", "…"], "config/mail.ini": ["host = \"mailpit\""] },  // fichiers déjà écrits (affichés,
+                                           // repliés, en lecture seule), placés dans le projet ; ils ne doivent JAMAIS contenir
+                                           // la solution d'un autre exercice
+  "fichier": "public/index.php"            // chemin du fichier de l'élève (défaut index.php) : __DIR__, require relatifs
+}
+```
+
+Chaque **cas** des `tests` PHP peut contenir, en plus de `titre`, `fonction`, `args`, `attendu`, `sortie`, `variables`, `donnees`, `siEchec` :
+
+| champ | rôle |
+|---|---|
+| `requete` | la requête de ce cas (sinon celle de l'exercice) |
+| `code` | PHP exécuté **après** le fichier de l'élève, dans la même requête ; sa valeur de `return` est comparée à `attendu`. Pour tester des classes (`return (new Pets\\Dog("Rex"))->speak();`), relire une variable, interroger la base, ou lire ce qu'un faux service a gardé (`PHPMailer::$envoyes`) |
+| `appel` | texte de l'appel affiché à l'élève, si celui calculé ne convient pas |
+| `contient` / `neContientPas` | textes que la page produite doit contenir / ne pas contenir (HTML compris) |
+| `redirection` | `"login.php"` (en-tête `Location` attendu, comparé à la fin du chemin), `true` (une redirection quelconque), `false` (aucune) |
+| `statut` | code HTTP attendu (`403`, `200`…) |
+| `cookies` | `{ "langue": "de" }` cookie envoyé avec cette valeur ; `null` : cookie supprimé ; `true` : cookie envoyé, valeur libre |
+| `dureeCookies` | `{ "langue": 2592000 }` : durée de vie attendue, en secondes (à quelques secondes près) |
+| `session` | sous-ensemble attendu de `$_SESSION` à la fin |
+| `sessionVide` | `true` : la session doit être détruite ou vide à la fin |
+
+Valeurs PHP en JSON : tableaux et tableaux associatifs en listes et objets ; un objet attendu s'écrit `{ "__objet": "Pets\\Dog", "props": { "name": "Rex" } }` (seules les propriétés listées sont comparées) ; `null`, `true`, `false` tels quels.
+
+**Diagnostics PHP** (dans `js/php.js`, à citer dans `erreursTypiques[].diagnostic`) :
+
+| id | quand |
+|---|---|
+| `echo-vs-return`, `sans-return`, `texte-vs-nombre`, `texte-vs-booleen`, `donnees-en-dur`, `tableau-vide`, `rien-affiche`, `lignes-collees`, `espaces`, `contenu`, `interdit`, `obligatoire` | résultat faux (même rôle que pour le JavaScript) |
+| `this-oublie`, `this-hors-objet`, `this-dollar`, `variable-inconnue`, `fonction-inconnue`, `methode-inconnue`, `propriete-inconnue`, `classe-inconnue`, `visibilite`, `abstract-new`, `methode-promise`, `extends-implements`, `parent-sans-extends`, `pas-un-trait`, `trait-propriete`, `signature`, `static`, `redeclare` | erreurs de POO (namespaces et traits compris) |
+| `arguments`, `type-argument`, `type-retour`, `type-attribut`, `attribut-vide`, `concat-plus`, `operandes`, `array-to-string`, `objet-en-texte`, `pas-un-objet`, `objet-tableau`, `cle-inconnue`, `constante-inconnue`, `division-zero`, `fichier-introuvable` | erreurs et avertissements traduits |
+| `entete-envoye`, `session-double` | `header`, `setcookie`, `session_start` après un affichage ; `session_start` deux fois |
+| `sql-table`, `sql-colonne`, `sql-syntaxe`, `sql-unique`, `sql-null`, `sql-parametres` | erreurs PDO / SQL traduites |
+| `syntaxe`, `syntaxe-fin`, `point-virgule`, `exception-non-attrapee` | syntaxe, exception non attrapée |
+| `sql-concat`, `xss`, `hachage-faible` (conseils de l'analyse du code), `entete-envoye`, `this-dollar`, `concat-plus` | saisie collée dans du SQL, saisie affichée sans `htmlspecialchars`, `md5` / `sha1` pour un mot de passe |
+
+Les avertissements de PHP (`Undefined variable`, `Undefined array key`…) s'affichent à l'élève comme des conseils, et font échouer les exemples de cartes dans `tools/tester-exercices.py`.
 
 ### Les erreurs typiques (vérifiées par `tools/tester-exercices.py`)
 

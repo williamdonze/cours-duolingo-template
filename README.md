@@ -1,6 +1,6 @@
 # Modèle : une appli façon Duolingo pour chaque cours
 
-Un moteur d'apprentissage prêt à l'emploi : leçons de 5 minutes, 23 types d'exercices, XP, séries de jours, badges, défi du jour, révisions espacées, fiches de théorie, mode sombre, appli installable sur téléphone et utilisable hors connexion. Pour les cours de programmation : du vrai code exécuté et testé dans le navigateur, avec les erreurs expliquées en français.
+Un moteur d'apprentissage prêt à l'emploi : leçons de 5 minutes, 23 types d'exercices, XP, séries de jours, badges, défi du jour, révisions espacées, fiches de théorie, mode sombre, appli installable sur téléphone et utilisable hors connexion. Pour les cours de programmation : du vrai code exécuté et testé dans le navigateur (JavaScript, PHP), avec les erreurs expliquées en français ; pour les autres langages (Java, Python, C, SQL…), du code coloré et des exercices de lecture, sans exécution.
 
 Issu de [Pampre](https://github.com/williamdonze/pampre) (le vin) et de [ProgWeb 2](https://github.com/williamdonze/progweb2) (JavaScript).
 
@@ -23,7 +23,7 @@ Ensuite :
 
 - **`content/`** : tout le contenu, en JSON (une unité par fichier). La section `app` de `content/config.json` règle le nom, la mascotte (forme, accessoire, cadre de code, ou dessin libre), les couleurs et les **modules** (`code-js` pour du JavaScript, `dom` pour des pages web, aucun pour un cours sans code).
 - Deux **unités d'exemple** : « Bien apprendre » (un cours sans code, avec un boss « étude de cas ») et « Catalogue des exercices » (un exemple de chaque type). Elles sont retirées quand on crée un vrai cours.
-- **`docs/format-contenu.md`** : la référence du format ; **`docs/format-memo.md`** : son mémo court. **`docs/modules.md`** : ajouter un langage (PHP, SQL…) ou un terminal simulé. **`docs/feuille-de-route.md`** : les améliorations prévues.
+- **`docs/format-contenu.md`** : la référence du format ; **`docs/format-memo.md`** : son mémo court. **`docs/modules.md`** : les langages (JavaScript et PHP exécutés ; Java, Python, C, SQL… sans exécution) et comment en faire exécuter un nouveau. **`docs/feuille-de-route.md`** : les améliorations prévues.
 
 ## Lancer et tester
 

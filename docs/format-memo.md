@@ -7,7 +7,7 @@ Version courte de `docs/format-contenu.md` : assez pour écrire 95 % d'une unit�
 - Tout élément a un `id` **unique et stable** (jamais renommé ensuite) : unité `u05`, leçon `u05-l2`, exercice `u05-l2-e3`, jeu `u05-jeu`, quiz `u05-quiz-q4`, boss `u05-b1` (et ses questions `u05-b1-q2`). Fiche : `minuscules-tirets`, unique dans **tout** le contenu.
 - `notions` = des ids de fiches (existantes, de cette unité ou d'avant). Chaque question en a au moins une et a une `explication`.
 - Texte enrichi : `**gras**`, `` `code` ``, `[[id-fiche]]` ou `[[id-fiche|texte]]`, `\n\n` paragraphe, `- ` liste. Code : tableau de lignes.
-- Les types qui exécutent du code demandent le module `code-js` ; un cours sans code n'utilise que les types « sans code ».
+- Le code est celui de `config.app.langage` (js, php, java…). Les exercices qui **exécutent** (`trous`, `corriger`, `ecrire`, boss de code, `predire` sans réponse écrite) demandent le module du langage (`code-js`, `code-php`) ; sans module, seulement les types « sans code » et « code non exécuté ». En PHP : champs `requete`, `fichiers`, `fichier` et cas `contient`, `redirection`, `cookies`, `session`… (`docs/format-contenu.md`, « Exercices en PHP »).
 - Jamais la solution affichée : `solution` ne sert qu'aux tests ; à la place, 1 à 3 `indices` (3 pour un boss : léger → précis → squelette à trous).
 
 ## L'unité
@@ -51,7 +51,7 @@ Avec du code affiché mais non exécuté (tout langage) :
 ```
 `mono: true` met les choix en police de code ; `ordreFixe: true` empêche de mélanger un QCM.
 
-## Exercices de code (module code-js)
+## Exercices de code (exécutés : module du langage ; exemple en JavaScript)
 
 ```json
 { "id": "…", "type": "ecrire", "question": "…", "depart": ["function f(nums) {", "  ", "}"],

@@ -20,6 +20,8 @@ MODELE = "https://github.com/williamdonze/cours-duolingo-template.git"
 DOSSIERS = ["js", "css", "tools", ".claude/skills", ".github/workflows"]
 FICHIERS = ["index.html", "sw.js", "manifest.webmanifest", "docs/format-contenu.md", "docs/format-memo.md", "docs/modules.md", "supports/README.md"]
 IGNORES = {"__pycache__", "captures"}
+# moteurs lourds (js/vendor/…) : copiés seulement si le cours active le module qui s'en sert
+VENDOR = {"js/vendor/php-wasm": "code-php"}
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--essai", action="store_true", help="montrer ce qui changerait, sans rien écrire")
@@ -45,9 +47,13 @@ version = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=src, captu
 a_copier = []
 for d in DOSSIERS:
     for f in sorted((src / d).rglob("*")) if (src / d).exists() else []:
-        if f.is_file() and not (set(f.relative_to(src).parts) & IGNORES):
+        if f.is_file() and not (set(f.relative_to(src).parts) & IGNORES) and not str(f.relative_to(src)).startswith("tools/exemples/"):
             a_copier.append(f.relative_to(src))
 a_copier += [Path(f) for f in FICHIERS if (src / f).exists()]
+import json
+modules = set(json.loads((RACINE / "content/config.json").read_text(encoding="utf-8")).get("app", {}).get("modules", []))
+inutiles = [d for d, m in VENDOR.items() if m not in modules]
+a_copier = [f for f in a_copier if not any(str(f).startswith(d + "/") for d in inutiles)]
 
 nouveaux, modifies = [], []
 for rel in a_copier:
@@ -55,7 +61,8 @@ for rel in a_copier:
     if not cible.exists(): nouveaux.append(rel)
     elif not filecmp.cmp(src / rel, cible, shallow=False): modifies.append(rel)
 propres = sorted(f.relative_to(RACINE) for d in DOSSIERS if (RACINE / d).exists() for f in (RACINE / d).rglob("*")
-                 if f.is_file() and not (set(f.relative_to(RACINE).parts) & IGNORES) and not (src / f.relative_to(RACINE)).exists())
+                 if f.is_file() and not (set(f.relative_to(RACINE).parts) & IGNORES) and not (src / f.relative_to(RACINE)).exists()
+                 and not any(str(f.relative_to(RACINE)).startswith(d + "/") for d in VENDOR))
 
 print(f"Modèle : {args.source} (version {version})")
 for titre, liste in [("nouveaux", nouveaux), ("mis à jour", modifies), ("propres au cours, gardés", propres)]:

@@ -40,7 +40,7 @@ function runSession(steps, opts){
     if (st.kind === "carte") {
       const c = st.carte;
       const art = h(`<article class="lcard">${c.illu ? `<div class="illu">${illu(c.illu, c)}</div>` : ""}<h2>${richInline(c.titre)}</h2><div class="rich">${rich(c.texte || "")}</div></article>`);
-      if (c.code) art.appendChild(c.executable === false || !aModule("code-js") ? h(`<div>${codeHTML(lignes(c.code))}</div>`) : blocExecutable(lignes(c.code), { donnees:c.donnees, dom:c.dom }));
+      if (c.code) art.appendChild(c.executable === false || !aCode() ? h(`<div>${codeHTML(lignes(c.code))}</div>`) : blocExecutable(lignes(c.code), { donnees:c.donnees, dom:c.dom, source:c }));
       if (c.apres) art.appendChild(h(`<div class="rich">${rich(c.apres)}</div>`));
       if (c.analogie) art.appendChild(h(`<div class="aside analogie">${I.egg.replace("<svg", '<svg style="color:var(--gold-deep)"')}<div><b class="t">L'image à retenir</b><div class="rich">${rich(c.analogie)}</div></div></div>`));
       if (c.astuce) art.appendChild(h(`<div class="aside tip">${I.bulb.replace("<svg", '<svg style="color:var(--teal)"')}<div><b class="t">Bon à savoir</b><div class="rich">${rich(c.astuce)}</div></div></div>`));
@@ -248,7 +248,7 @@ function shell(){
     <button class="tab" data-go="home">${I.home}Parcours</button>
     <button class="tab" data-go="defi">${I.star}Défi</button>
     <button class="tab" data-go="theorie">${I.book}Théorie</button>
-    ${aModule("code-js") ? `<button class="tab" data-go="console">${I.terminal}Console</button>` : ""}
+    ${aCode() ? `<button class="tab" data-go="console">${I.terminal}Console</button>` : ""}
     <button class="tab" data-go="profil">${I.user}Profil</button></div></nav>`));
   document.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go); });
 }
@@ -261,7 +261,7 @@ function renderTop(){
 function render(){
   shell(); renderTop();
   $app.innerHTML = "";
-  const v = { home:viewHome, defi:viewDefi, theorie:viewTheorie, console: aModule("code-js") ? viewConsole : null, profil:viewProfil, projet: D.config.projet ? viewProjet : null }[VIEW] || viewHome;
+  const v = { home:viewHome, defi:viewDefi, theorie:viewTheorie, console: aCode() ? viewConsole : null, profil:viewProfil, projet: D.config.projet ? viewProjet : null }[VIEW] || viewHome;
   $app.appendChild(v());
 }
 
@@ -394,8 +394,9 @@ function viewTheorie(){
 
 /* ---------------- vue : console libre (bac à sable) ---------------- */
 function viewConsole(){
-  const el = h(`<main class="wrap"><h1 style="font-size:32px">Console</h1><p class="muted" style="margin:4px 0 6px">Ton bac à sable : écris du JavaScript, exécute, regarde la console. Rien n'est noté. Les erreurs sont expliquées en français.</p><div class="zone"></div><div class="ed-actions"><button type="button" class="btn small" data-run>${I.play}Exécuter</button><button type="button" class="btn small ghost" data-clear>${I.reset}Effacer</button></div><div class="sortie"></div></main>`);
-  const depart = ['const fruits = ["pomme", "kiwi", "mangue"];', "", "fruits.forEach((fruit) => console.log(fruit));", ""].join("\n");
+  const el = h(`<main class="wrap"><h1 style="font-size:32px">Console</h1><p class="muted" style="margin:4px 0 6px">Ton bac à sable : écris du ${esc(LANG.nom)}, exécute, regarde ${esc(LANG.ecran)}. Rien n'est noté. Les erreurs sont expliquées en français.</p><div class="zone"></div><div class="ed-actions"><button type="button" class="btn small" data-run>${I.play}Exécuter</button><button type="button" class="btn small ghost" data-clear>${I.reset}Effacer</button></div><div class="sortie"></div></main>`);
+  const depart = LANG.consoleDepart.join("\n");
+  prechargerLangage();
   let t = null;
   const ed = Editeur({ code: typeof ST.brouillons.__console === "string" ? ST.brouillons.__console : depart, onChange: v => { clearTimeout(t); t = setTimeout(() => { ST.brouillons.__console = v; save(); }, 400); }, etiquette:"Console libre" });
   el.querySelector(".zone").appendChild(ed.el);
@@ -404,9 +405,10 @@ function viewConsole(){
     const b = e.currentTarget; b.disabled = true;
     const r = await executer({ code: ed.valeur() });
     b.disabled = false; sortie.innerHTML = "";
-    sortie.appendChild(h(consoleHTML(r.console, { vide:"Rien n'a été affiché. Utilise console.log(…)." })));
+    sortie.appendChild(h(consoleHTML(r.console, { vide:`Rien n'a été affiché. Utilise ${LANG.afficher}` })));
+    if (r.page) sortie.appendChild(apercuPageHTML(r.page));
     if (r.erreur || r.conseils?.length) sortie.appendChild(resultatHTML({ erreur:r.erreur, conseils:r.conseils }));
-    ed.marquer(r.erreur?.ligne);
+    ed.marquer(r.erreur?.ligne || r.conseils?.find(c => c.avertissement)?.ligne);
   };
   el.querySelector("[data-clear]").onclick = () => confirmBox("Tout effacer ?", "Le code de la console sera effacé.", "Effacer", () => { ed.definir(""); ST.brouillons.__console = ""; save(); sortie.innerHTML = ""; });
   return el;
@@ -427,7 +429,7 @@ function viewProfil(){
     <div class="kpi" style="color:var(--prim-ink)">${I.lesson}<div><b style="color:var(--ink)">${lecons}</b><span>leçons terminées</span></div></div>
     <div class="kpi" style="color:var(--gold-deep)">${I.trophy}<div><b style="color:var(--ink)">${Object.values(ST.quiz).filter(q => q.passed).length}/${D.unites.length}</b><span>unités validées</span></div></div>
     <div class="kpi" style="color:#C2410C">${I.boss}<div><b style="color:var(--ink)">${bossFaits}/${bossTotal}</b><span>boss vaincus</span></div></div>
-    ${aModule("code-js") ? `<div class="kpi" style="color:var(--ok-ink)">${I.terminal}<div><b style="color:var(--ink)">${ST.stats.codes}</b><span>codes qui passent les tests</span></div></div>` : ""}</div>`));
+    ${aCode() ? `<div class="kpi" style="color:var(--ok-ink)">${I.terminal}<div><b style="color:var(--ink)">${ST.stats.codes}</b><span>codes qui passent les tests</span></div></div>` : ""}</div>`));
   const notions = Object.entries(ST.notions).filter(([id]) => FICHES[id]);
   if (notions.length) el.appendChild(h(`<div><h2 class="sec-title">Tes notions</h2><p class="muted" style="font-size:14px">5 cases vertes : la notion est solide (révisée de plus en plus rarement). Une erreur la ramène à 1 case.</p><div class="notions">${notions.sort((a, b) => a[1].b - b[1].b).map(([id, n]) => `<div class="notion"><button type="button" class="fl nm" data-fiche="${esc(id)}" style="text-align:left">${esc(FICHES[id].titre)}</button><span class="bx" aria-label="Niveau ${n.b} sur 5">${[1,2,3,4,5].map(k => `<i class="${k <= n.b ? "on" : ""}"></i>`).join("")}</span></div>`).join("")}</div></div>`));
   const badges = tousLesBadges();

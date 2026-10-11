@@ -36,7 +36,8 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] `/nouveau-cours` propose 3 mascottes adaptées à la matière, en aperçu (`tools/apercu-mascottes.py`) ; catalogue en image : `docs/mascottes.png`
 
 ## Lot 5 — langages
-- [ ] Socle commun à tous les langages : éditeur, coloration selon le langage, banc d'essai, tests, indices, diagnostics, outils de test ; un langage = un petit fichier (exécuter + traduire les erreurs)
-- [ ] Reporter le module `code-php` de ProgServ2 (PHP 8.3 en WebAssembly) sur ce socle, chargé seulement au premier exercice de code et hors cache tant qu'il n'a pas servi
-- [ ] Mode « code sans exécution » pour n'importe quel langage (prédire, trous, ligne fautive, remettre dans l'ordre, choisir la correction)
-- [ ] Mettre à jour `docs/modules.md`, `CLAUDE.md`, les tests du modèle
+- [x] Socle commun à tous les langages : éditeur, coloration selon le langage, banc d'essai, tests, indices, diagnostics, outils de test ; un langage = un petit fichier (exécuter + traduire les erreurs)
+- [x] Reporter le module `code-php` de ProgServ2 (PHP 8.3 en WebAssembly) sur ce socle, chargé seulement au premier exercice de code et hors cache tant qu'il n'a pas servi
+- [x] Mode « code sans exécution » pour n'importe quel langage (prédire avec réponse écrite ou choix, ligne fautive, remettre dans l'ordre, pointer dans le code, QCM sur du code ; boss « étude de cas »)
+- [x] Mettre à jour `docs/modules.md`, `CLAUDE.md`, les tests du modèle (unités d'exemple `tools/exemples/php` et `java`, `--exemple` dans les trois outils, CI)
+- [x] Vérifié sur ProgServ2 : `mettre-a-jour-moteur` ne trouve plus rien de propre au cours, et ses trois tests passent avec le moteur du modèle (123 solutions, 257 erreurs typiques, 103 sessions)

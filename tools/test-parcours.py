@@ -4,19 +4,20 @@ chaque leçon, jeu, quiz et boss de chaque unité, dans l'ordre du parcours (le 
 Chaque question est remplie par son resoudre() (la bonne réponse calculée par le moteur), puis vérifiée par le
 vrai bouton « Vérifier » : une feuille rouge signale une incohérence entre une question et son corrigé.
 
-Vérifie aussi (module code-js) : le parcours « faux puis corrigé » d'un exercice de code (feuille rouge, Corriger, puis vert) ;
+Vérifie aussi (langage exécuté : JavaScript, PHP…) : le parcours « faux puis corrigé » d'un exercice de code (feuille rouge, Corriger, puis vert) ;
 la sauvegarde (XP, unités validées, boss), le défi du jour, les vues Théorie, Console et Profil.
 
-Usage : python3 tools/test-parcours.py [--captures] [--largeur 390]
+Usage : python3 tools/test-parcours.py [--captures] [--largeur 390] [--exemple php]
 """
 import argparse, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-from outils import serveur, navigateur, URL, RACINE
+from outils import serveur, navigateur, exemple, URL, RACINE
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--captures", action="store_true", help="enregistrer une capture par type de question dans tools/captures/")
 ap.add_argument("--largeur", type=int, default=390)
+ap.add_argument("--exemple", help="jouer une unité d'exemple de tools/exemples/ (php, java…) au lieu du contenu")
 args = ap.parse_args()
 CAP = RACINE / "tools" / "captures"
 if args.captures:
@@ -47,7 +48,7 @@ def jouer_session(pg, titre):
         pg.evaluate("async () => { await window.__q.resoudre(); }")
         pg.wait_for_selector("[data-check]:not([disabled])", timeout=5000)
         pg.click("[data-check]")
-        pg.wait_for_selector(".sheet", timeout=8000)
+        pg.wait_for_selector(".sheet", timeout=30000)
         if pg.query_selector(".sheet.ko"):
             detail = pg.inner_text(".sheet .expl")[:300]
             problemes.append(f"{titre} · {kind} · « {info['titre']} » : faux alors que résolu → {detail}")
@@ -55,7 +56,7 @@ def jouer_session(pg, titre):
                 # exercice de code : on passe après avoir enregistré le problème
                 for _ in range(3):
                     pg.click("[data-fix]"); pg.evaluate("async () => { await window.__q.resoudre(); }")
-                    pg.click("[data-check]"); pg.wait_for_selector(".sheet", timeout=8000)
+                    pg.click("[data-check]"); pg.wait_for_selector(".sheet", timeout=30000)
                     if pg.query_selector("[data-cont]"): break
                 if pg.query_selector("[data-skip]"): pg.click("[data-skip]")
         n += 1
@@ -70,29 +71,30 @@ try:
         erreurs_js = []
         pg.on("pageerror", lambda e: erreurs_js.append(str(e)))
         pg.on("console", lambda m: m.type == "error" and erreurs_js.append(m.text))
+        exemple(pg, args.exemple)
         pg.goto(URL + "?test")
         pg.wait_for_selector(".node")
         if args.captures:
             pg.screenshot(path=str(CAP / "00-accueil.png"))
 
-        code_js = pg.evaluate("() => aModule('code-js')")
-        # 1. module « code-js » : un exercice de code raté puis corrigé (exercice de démonstration, indépendant du contenu)
-        if code_js:
-            pg.evaluate("""() => runSession([{ kind:'q', q:{ type:'ecrire', id:'demo-code', question:'Affiche Bonjour le monde', depart:[''],
-                tests:{ cas:[{ sortie:['Bonjour le monde'] }] }, indices:['console.log'], solution:['console.log("Bonjour le monde");'], explication:'demo' } }], { title:'démo', onEnd:() => ({}) })""")
+        demo = pg.evaluate("() => aCode() ? LANG.demo || null : null")   # langage exécuté (js/langages.js) : son exercice de démonstration
+        # 1. exercice de code raté puis corrigé (démonstration, indépendante du contenu ; le moteur peut démarrer : délais larges)
+        if demo:
+            pg.evaluate("""(d) => runSession([{ kind:'q', q:{ type:'ecrire', id:'demo-code', question:'Affiche Bonjour le monde', depart:[''],
+                tests:{ cas:[{ sortie:['Bonjour le monde'] }] }, indices:['…'], solution:[d.juste], explication:'demo' } }], { title:'démo', onEnd:() => ({}) })""", demo)
             pg.wait_for_selector(".editeur textarea")
-            pg.fill(".editeur textarea", 'console.log(Bonjour le monde);')
+            pg.fill(".editeur textarea", demo["faux"])
             pg.click("[data-check]")
-            pg.wait_for_selector(".sheet.ko [data-fix]")
+            pg.wait_for_selector(".sheet.ko [data-fix]", timeout=60000)
             texte = pg.inner_text(".sheet")
-            if "guillemets" not in texte:
-                problemes.append(f"code faux : le message n'explique pas les guillemets → {texte[:200]}")
+            if demo["motAttendu"] not in texte:
+                problemes.append(f"code faux : le message n'explique pas « {demo['motAttendu']} » → {texte[:200]}")
             if args.captures:
                 pg.screenshot(path=str(CAP / "code-faux-feuille.png"))
             pg.click("[data-fix]")
-            pg.fill(".editeur textarea", 'console.log("Bonjour le monde");')
+            pg.fill(".editeur textarea", demo["juste"])
             pg.click("[data-check]")
-            pg.wait_for_selector(".sheet.ok", timeout=8000)
+            pg.wait_for_selector(".sheet.ok", timeout=20000)
             pg.click("[data-cont]"); pg.click("[data-done]")
             pg.wait_for_selector(".node")
 
@@ -136,7 +138,7 @@ try:
         pg.click("[data-cont]"); pg.click("[data-done]")
 
         # 4. les autres vues
-        for vue in ["theorie"] + (["console"] if code_js else []) + ["profil", "defi"]:
+        for vue in ["theorie"] + (["console"] if demo else []) + ["profil", "defi"]:
             pg.click(f'.tab[data-go="{vue}"]')
             pg.wait_for_timeout(150)
             if args.captures:
@@ -150,12 +152,12 @@ try:
         if args.captures:
             pg.screenshot(path=str(CAP / "fiche.png"))
         pg.click(".drawer [data-close]")
-        if code_js:
+        if demo:
             pg.click('.tab[data-go="console"]')
-            pg.fill(".editeur textarea", "const fruits = [\"kiwi\"];\nfruits.forEach((fruits) => console.log(fruit));")
+            pg.fill(".editeur textarea", demo["console"])
             pg.click("main [data-run]")
-            pg.wait_for_selector("main .diag")
-            if "fruit" not in pg.inner_text("main .resultat"):
+            pg.wait_for_selector("main .diag", timeout=20000)
+            if demo["consoleAttendu"] not in pg.inner_text("main .resultat"):
                 problemes.append("console libre : l'erreur n'est pas expliquée")
         # 4 bis. le projet (s'il y en a un) : cocher un critère, il reste coché
         if pg.evaluate("() => !!D.config.projet"):

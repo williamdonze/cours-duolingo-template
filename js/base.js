@@ -16,6 +16,8 @@ const aModule = m => APP.modules.includes(m);
 function appliquerApp(cfg = {}){
   Object.assign(APP, cfg, { mascotte: { ...APP.mascotte, ...(cfg.mascotte || {}) }, textes: { ...APP.textes, ...(cfg.textes || {}) } });
   SAVE_KEY = `${APP.cle}-sauvegarde-v1`;
+  // langage du code (js/langages.js) : config.app.langage, sinon celui du module de code activé, sinon JavaScript
+  LANG = LANGAGES[APP.langage] || Object.values(LANGAGES).find(l => l.module && l.module !== "code-js" && aModule(l.module)) || LANGAGES.js;
   document.title = APP.nom;
   document.documentElement.lang = APP.langue || "fr";
   // couleurs : { "clair": { "--prim": "#…" }, "sombre": { … } } ; les jetons non cités gardent leur valeur de css/app.css
@@ -426,7 +428,7 @@ function confetti(){
 /* jetons colorés, découpés par ligne (un commentaire ou une chaîne peut s'étendre sur plusieurs lignes) */
 function lignesColorees(code){
   const out = [[]];
-  for (const j of jetons(code)) {
+  for (const j of (LANG || LANGAGES.js).jetons(code)) {
     const morceaux = j.v.split("\n");
     morceaux.forEach((m, i) => { if (i > 0) out.push([]); if (m) out[out.length - 1].push({ ...j, v:m }); });
   }
@@ -459,9 +461,21 @@ function consoleHTML(logs, opts = {}){
   return `<div class="console" role="log" aria-label="Console">${opts.titre === false ? "" : `<div class="titre">Console</div>`}${L || `<div class="vide">${esc(opts.vide || "Rien n'a été affiché.")}</div>`}</div>`;
 }
 
-/* ---------------- exécution dans le bac à sable (Web Worker) ---------------- */
-const DELAI_MAX = 2000;   // ms : au-delà, on considère que le code tourne en rond
+/* ---------------- exécution du code : celle du langage du cours (js/langages.js) ---------------- */
+/* payload : { code, donnees, prelude, tests, contexte, …champs propres au langage (champsExec) } → résultat au format de executerTout */
 function executer(payload){
+  if (!aCode()) return Promise.resolve({ ok:false, console:[], cas:[], diagnostics:[], conseils:[], erreur:{ titre:"Pas d'exécution", message:`Ce cours n'exécute pas le ${LANG.nom}.` } });
+  return LANG.executer(payload);
+}
+/* aperçu d'une page HTML produite par le code (PHP…) : iframe sans JavaScript */
+function apercuPageHTML(html){
+  const el = h(`<div class="apercu-page"><div class="eyebrow">Aperçu de la page envoyée au navigateur</div><iframe sandbox="" title="Aperçu de la page"></iframe><p class="note">Les scripts ne s'exécutent pas dans l'aperçu.</p></div>`);
+  el.querySelector("iframe").srcdoc = `<!doctype html><meta charset="utf-8"><style>body{font-family:system-ui,sans-serif;margin:12px;font-size:15px}</style>${html}`;
+  return el;
+}
+/* JavaScript (module code-js) : un Web Worker neuf par exécution (js/worker.js + js/banc.js), tué après DELAI_MAX */
+const DELAI_MAX = 2000;   // ms : au-delà, on considère que le code tourne en rond
+function executerJs(payload){
   return new Promise(resolve => {
     let w;
     const vide = { ok:false, console:[], cas:[], diagnostics:[], conseils:[] };
@@ -475,12 +489,13 @@ function executer(payload){
 }
 /* bouton « Exécuter » sous un exemple de code (cartes de leçon, fiches) */
 function blocExecutable(code, opts = {}){
+  prechargerLangage();
   const el = h(`<div>${codeHTML(code, opts)}<div class="code-run"><button type="button" class="btn small ghost" data-run>${I.play}Exécuter</button></div><div class="sortie"></div></div>`);
   el.querySelector("[data-run]").onclick = async (e) => {
     const b = e.currentTarget;
     if (opts.dom) {   // exemple sur une page web (TP DOM) : la page s'affiche, la console se remplit au fil des clics
       const s = el.querySelector(".sortie");
-      s.innerHTML = `<div class="apercu-zone"></div>${consoleHTML([], { vide:"Rien n'a été affiché (pas de console.log)." })}`;
+      s.innerHTML = `<div class="apercu-zone"></div>${consoleHTML([], { vide:`Rien n'a été affiché (pas de ${LANG.afficher}).` })}`;
       const cons = s.querySelector(".console") || s.lastElementChild;
       const ajouter = (t, err) => { cons.querySelector(".vide")?.remove(); const l = h(`<div class="cl ${err ? "err" : ""}"></div>`); l.innerHTML = ansiHTML(t); cons.appendChild(l); };
       const r = await apercuDom(s.querySelector(".apercu-zone"), { code, dom: opts.dom, surLog: (t, g) => ajouter(t, g === "error") });
@@ -488,11 +503,13 @@ function blocExecutable(code, opts = {}){
       return;
     }
     b.disabled = true;
-    const r = await executer({ code, donnees: opts.donnees || null });
+    const r = await executer({ code, donnees: opts.donnees || null, ...champsExec(opts.source) });
     b.disabled = false;
     const s = el.querySelector(".sortie");
-    s.innerHTML = consoleHTML(r.console.concat(r.erreur ? [`✖ ${r.erreur.titre} : ${r.erreur.message}`] : []), { vide:"Rien n'a été affiché (pas de console.log)." });
+    s.innerHTML = consoleHTML(r.console.concat(r.erreur ? [`✖ ${r.erreur.titre} : ${r.erreur.message}`] : []), { vide:`Rien n'a été affiché (pas de ${LANG.afficher}).` });
     if (r.erreur) s.querySelector(".cl:last-child")?.classList.add("err");
+    for (const c of (r.conseils || []).filter(c => c.avertissement)) s.appendChild(h(`<div class="diag conseil"><b>Avertissement de ${esc(LANG.nom)}</b>${richInline(c.message)}</div>`));
+    if (r.page) s.appendChild(apercuPageHTML(r.page));
   };
   return el;
 }
@@ -529,7 +546,7 @@ function ficheHTML(f){
   if (f.texte) el.appendChild(h(`<div class="rich" style="margin-top:14px">${rich(f.texte)}</div>`));
   for (const ex of f.exemples || []) {
     if (ex.titre) el.appendChild(h(`<h3>${richInline(ex.titre)}</h3>`));
-    el.appendChild(aModule("code-js") && ex.executable !== false ? blocExecutable(lignes(ex.code), { dom: ex.dom }) : h(`<div>${codeHTML(lignes(ex.code))}</div>`));
+    el.appendChild(aCode() && ex.executable !== false ? blocExecutable(lignes(ex.code), { dom: ex.dom, source: ex }) : h(`<div>${codeHTML(lignes(ex.code))}</div>`));
     if (ex.note) el.appendChild(h(`<div class="rich" style="font-size:15px">${rich(ex.note)}</div>`));
   }
   if (f.pieges?.length) el.appendChild(h(`<div class="aside piege">${I.warn.replace("<svg", '<svg style="color:var(--ko)"')}<div><b class="t">Pièges classiques</b><div class="rich">${rich(f.pieges.map(p => "- " + p).join("\n"))}</div></div></div>`));

@@ -1,0 +1,36 @@
+{
+  "id": "x-java",
+  "titre": "Exemple : Java sans exécution",
+  "sousTitre": "Unité de test du mode « code sans exécution » (tools/exemples/java)",
+  "objectif": "Vérifier qu'un cours de Java fonctionne sans module : coloration, éditeur, exercices qui n'exécutent pas le code.",
+  "icone": "{ }",
+  "fiches": [
+    { "id": "x-java-boucle", "titre": "La boucle for", "icone": "for", "resume": "`for (init; condition; pas)` répète un bloc.",
+      "texte": "La condition est testée avant chaque tour.", "exemples": [{ "code": ["for (int i = 0; i < 3; i++) {", "    System.out.println(i);", "}"] }] }
+  ],
+  "lecons": [
+    { "id": "x-java-l1", "titre": "Lire une boucle", "duree": 5, "notions": ["x-java-boucle"],
+      "cartes": [ { "titre": "Une boucle qui compte", "texte": "Lis le code : il n'est pas exécuté dans ce cours.", "code": ["// compte de 0 à 2", "for (int i = 0; i < 3; i++) {", "    System.out.println(\"Tour \" + i);", "}"], "fiche": "x-java-boucle" } ],
+      "exercices": [
+        { "id": "x-java-l1-e1", "type": "predire", "notions": ["x-java-boucle"], "question": "Qu'affiche ce code ?", "code": ["for (int i = 1; i <= 3; i++) {", "    System.out.println(i * 2);", "}"], "reponse": "2\n4\n6", "explication": "i vaut 1, 2, 3 : on affiche 2, 4, 6." },
+        { "id": "x-java-l1-e2", "type": "predire", "notions": ["x-java-boucle"], "question": "Combien de lignes affiche ce code ?", "code": ["for (int i = 0; i < 5; i += 2) {", "    System.out.println(i);", "}"], "choix": ["3", "5", "2"], "bonne": 0, "explication": "i vaut 0, 2, 4." },
+        { "id": "x-java-l1-e3", "type": "bug", "notions": ["x-java-boucle"], "question": "Quelle ligne ne compile pas ?", "code": ["int total = 0;", "for (int i = 0; i < 3; i++) {", "    total += i", "}"], "ligne": 3,
+          "choix": ["Il manque le point-virgule", "`total` n'est pas déclaré", "`i++` est interdit"], "bonne": 0, "explication": "En Java, chaque instruction finit par `;`." },
+        { "id": "x-java-l1-e4", "type": "parsons", "notions": ["x-java-boucle"], "question": "Remets dans l'ordre une boucle qui affiche 0, 1, 2.", "lignes": ["for (int i = 0; i < 3; i++) {", "    System.out.println(i);", "}"], "distracteurs": ["for (int i = 0; i <= 3; i++) {"], "explication": "`< 3` s'arrête à 2." },
+        { "id": "x-java-l1-e5", "type": "pointer-code", "notions": ["x-java-boucle"], "question": "Touche la condition de la boucle.", "code": ["for (int i = 0; ⟦i < 3⟧; i++) {", "    System.out.println(i);", "}"], "explication": "La condition est au milieu, entre les deux `;`." }
+      ] }
+  ],
+  "jeux": [],
+  "quiz": { "titre": "Quiz", "questions": [
+    { "id": "x-java-quiz-q1", "type": "qcm", "notions": ["x-java-boucle"], "question": "Quelle instruction affiche une ligne en Java ?", "choix": ["System.out.println(…)", "console.log(…)", "echo …"], "bonne": 0, "mono": true, "explication": "`System.out.println`." }
+  ] },
+  "boss": [
+    { "id": "x-java-b1", "titre": "Lire un programme", "source": "Exemple du modèle", "notions": ["x-java-boucle"], "enonce": "Un programme compte les tours d'une boucle. Lis-le, puis réponds.",
+      "questions": [
+        { "id": "x-java-b1-q1", "type": "predire", "notions": ["x-java-boucle"], "question": "Qu'affiche-t-il ?", "code": ["int n = 0;", "for (int i = 0; i < 4; i++) {", "    n += i;", "}", "System.out.println(n);"], "reponse": "6", "explication": "0 + 1 + 2 + 3 = 6." },
+        { "id": "x-java-b1-q2", "type": "vf", "notions": ["x-java-boucle"], "question": "La boucle fait 4 tours.", "bonne": true, "explication": "i = 0, 1, 2, 3." },
+        { "id": "x-java-b1-q3", "type": "qcm", "notions": ["x-java-boucle"], "question": "Que vaut i après la boucle ?", "choix": ["i n'existe plus", "3", "4"], "bonne": 0, "explication": "i est déclaré dans le for : il n'existe que dans la boucle." },
+        { "id": "x-java-b1-q4", "type": "bug", "notions": ["x-java-boucle"], "question": "Quelle ligne ne compile pas ?", "code": ["String nom = \"Ada\"", "System.out.println(nom);"], "ligne": 1, "choix": ["Il manque le point-virgule", "String s'écrit en minuscules"], "bonne": 0, "explication": "Chaque instruction finit par `;`." }
+      ] }
+  ]
+}

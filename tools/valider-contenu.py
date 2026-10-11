@@ -4,7 +4,8 @@ Vérifie la structure des JSON, les identifiants (uniques, stables), le parcours
 de chaque type d'exercice, les liens vers les fiches. Code de sortie 1 en cas d'erreur ; les ⚠ sont à relire.
 Le test complet (exécution réelle des solutions et des erreurs typiques) est tools/tester-exercices.py.
 
---fiches : affiche aussi les fiches de chaque unité (id et titre), pour s'y relier sans relire les unités."""
+--fiches : affiche aussi les fiches de chaque unité (id et titre), pour s'y relier sans relire les unités.
+--exemple php : valide l'unité d'exemple tools/exemples/php/ (test d'un langage dans le modèle)."""
 import json, re, sys
 from pathlib import Path
 
@@ -25,15 +26,29 @@ TYPES = {
     "ecrire": ["question", "tests", "solution"], "boss": ["titre", "enonce", "tests", "solution", "indices"],
 }
 CODE = {"trous", "corriger", "ecrire", "boss"}
-# types qui exécutent ou évaluent du JavaScript : ils demandent le module « code-js » ; les pages web, le module « dom »
-MODULES_CONNUS = {"code-js", "dom"}
-TYPES_CODE_JS = CODE | {"reduce-pas", "filtre-visuel", "map-visuel", "types-chaine", "fisher-yates", "pointer-tableau", "objet"}
+# langages (js/langages.js) et le module qui exécute chacun (None : coloration et exercices sans exécution)
+LANGAGES = {"js": "code-js", "php": "code-php", "java": None, "python": None, "c": None, "cpp": None, "csharp": None, "sql": None, "bash": None}
+MODULES_CONNUS = {"code-js", "dom", "code-php"}
+# types qui évaluent du JavaScript (quel que soit le langage du cours) : module « code-js » ; les pages web : module « dom »
+TYPES_JS_SEUL = {"reduce-pas", "filtre-visuel", "map-visuel", "types-chaine", "fisher-yates", "pointer-tableau", "objet"}
+TYPES_CODE_JS = CODE | TYPES_JS_SEUL
+# champs permis dans un cas de test PHP (js/php.js)
+CHAMPS_CAS_PHP = {"titre", "requete", "code", "fonction", "args", "attendu", "sortie", "contient", "neContientPas", "redirection", "cookies", "dureeCookies",
+                  "session", "sessionVide", "statut", "variables", "donnees", "siEchec", "appel"}
 lignes = lambda c: "\n".join(c) if isinstance(c, list) else str(c or "")
 
 try:
     config = json.loads((RACINE / "content/config.json").read_text(encoding="utf-8"))
 except Exception as e:
     print("✖ content/config.json illisible :", e); sys.exit(1)
+# --exemple NOM : valider l'unité d'exemple tools/exemples/NOM/ (langage, modules) au lieu du contenu
+if "--exemple" in sys.argv:
+    nom = sys.argv[sys.argv.index("--exemple") + 1]
+    reglages = json.loads((RACINE / f"tools/exemples/{nom}/config.json").read_text(encoding="utf-8"))
+    config["app"] = {**config["app"], **reglages.get("app", {})}
+    config["unites"], config["aVenir"] = [f"tools/exemples/{nom}/unite.json"], []
+    config.pop("projet", None)
+    config["badges"] = [b for b in config["badges"] if b["id"] != "memoire"]
 for k in ["app", "seuilValidation", "unites", "rangs", "badges"]:
     if k not in config: E(f"config.json : champ « {k} » manquant")
 APP = config.get("app", {})
@@ -54,6 +69,11 @@ else:
         if not MASC.get(k): E(f"config.json : mascotte.{k} manquant")
 MODULES = set(APP.get("modules", []))
 for m in MODULES - MODULES_CONNUS: E(f"config.json : module inconnu « {m} » (connus : {', '.join(sorted(MODULES_CONNUS))})")
+LANGAGE = APP.get("langage") or ("php" if "code-php" in MODULES else "js")
+if LANGAGE not in LANGAGES: E(f"config.json : langage inconnu « {LANGAGE} » (connus : {', '.join(LANGAGES)} ; en ajouter un : docs/modules.md)")
+if "code-php" in MODULES and "code-js" in MODULES: E("config.json : un cours exécute UN langage : « code-php » ou « code-js », pas les deux")
+EXEC = LANGAGES.get(LANGAGE) in MODULES   # le code du cours est-il exécuté ?
+if LANGAGES.get(LANGAGE) and not EXEC: W(f"config.json : langage « {LANGAGE} » sans son module « {LANGAGES[LANGAGE]} » : le code ne sera pas exécuté")
 
 unites, ids_q, ids_fiche, ids_unite, ids_badge = [], {}, {}, set(), set()
 for b in config.get("badges", []):
@@ -76,10 +96,18 @@ for chemin in config.get("unites", []):
 def verifier_question(q, ou):
     t = q.get("type")
     if t not in TYPES: E(f"{ou} : type inconnu « {t} »"); return
-    if t in TYPES_CODE_JS and "code-js" not in MODULES and not (t == "predire"):
-        E(f"{ou} : le type « {t} » demande le module « code-js » (config.app.modules)")
-    if t == "predire" and q.get("reponse") is None and not q.get("choix") and "code-js" not in MODULES:
-        E(f"{ou} : « predire » sans réponse écrite exécute du JavaScript : module « code-js », ou donne « reponse »")
+    if t in TYPES_JS_SEUL and ("code-js" not in MODULES or LANGAGE != "js"):
+        E(f"{ou} : le type « {t} » évalue du JavaScript : il demande un cours de JavaScript avec le module « code-js »")
+    if t in CODE and not EXEC:
+        E(f"{ou} : le type « {t} » exécute du code, et ce cours n'exécute pas le langage « {LANGAGE} » : utilise les exercices sans exécution (predire avec reponse ou choix, bug, parsons, pointer-code, qcm), voir docs/modules.md")
+    if t == "predire" and q.get("reponse") is None and not q.get("choix") and not EXEC:
+        E(f"{ou} : « predire » sans réponse écrite exécute le code : donne « reponse » (ou « choix »), ce cours n'exécute pas le langage « {LANGAGE} »")
+    if LANGAGE == "php" and t in CODE:
+        for c in q.get("tests", {}).get("cas", []):
+            for k in c:
+                if k not in CHAMPS_CAS_PHP: E(f"{ou} : champ de cas PHP inconnu « {k} » (connus : {', '.join(sorted(CHAMPS_CAS_PHP))})")
+            if not any(k in c for k in ("attendu", "sortie", "contient", "neContientPas", "redirection", "cookies", "session", "sessionVide", "statut", "variables")):
+                W(f"{ou} : un cas de test ne vérifie rien ({c.get('titre', '?')})")
     if (t == "selecteur" or q.get("dom")) and "dom" not in MODULES: E(f"{ou} : page web (dom) : il faut le module « dom »")
     qid = q.get("id")
     if not qid: E(f"{ou} : pas d'id (obligatoire : il sert à la sauvegarde)")

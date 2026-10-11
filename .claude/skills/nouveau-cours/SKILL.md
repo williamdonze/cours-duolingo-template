@@ -52,15 +52,16 @@ Après une première lecture des supports, pose **en un seul message** (outil de
 
 | profil | modules | ce qu'on met en avant |
 |---|---|---|
-| code (JavaScript) | `code-js` (+ `dom` s'il y a des pages web) | exercices exécutés (`trous`, `corriger`, `ecrire`), `predire`, `bug`, `parsons` ; boss de code ; badges de code |
-| code (autre langage) | le module du langage s'il existe (`docs/modules.md`) ; sinon aucun, et des exercices de code **sans exécution** : `predire` (avec `reponse` ou `choix`), `bug`, `parsons`, `pointer-code`, `qcm` en police de code | lire et comprendre le code avant de l'écrire ; proposer d'ajouter le module plus tard |
+| code JavaScript | `code-js` (+ `dom` s'il y a des pages web) | exercices exécutés (`trous`, `corriger`, `ecrire`), `predire`, `bug`, `parsons` ; boss de code ; badges de code |
+| code PHP | `"langage": "php"`, module `code-php` | comme JavaScript : PHP 8.3 exécuté, requête HTTP simulée (formulaires, cookies, session, PDO) |
+| code (autre langage : Java, Python, C, C++, C#, SQL, Bash) | `"langage": "java"` (etc.), aucun module : **code sans exécution** (`docs/modules.md`) | lire et comprendre le code avant de l'écrire : `predire` (avec `reponse` ou `choix`), `bug`, `parsons`, `pointer-code`, `qcm` en police de code ; boss « étude de cas » sur un programme du cours. Proposer d'ajouter l'exécution plus tard (un module) si l'élève y tient |
 | par cœur (définitions, dates, auteurs, vocabulaire) | aucun | `assoc`, `qcm`, `vf`, `tri`, beaucoup de petites questions dans les jeux, que la répétition espacée fera revenir ; rangs et badges dans le vocabulaire du cours |
 | méthodes, études de cas (UX, gestion, droit…) | aucun | `ordre`, `tri`, `qcm` sur des situations ; boss « étude de cas » ; ce qui serait une rédaction libre devient un choix, un classement ou une grille d'auto-évaluation |
 | langue | aucun | `assoc`, `qcm`, `ordre` (remettre une phrase dans l'ordre), `predire` en saisie libre avec `reponse` et `accepte` (traduction courte) |
 
 ## 3. Identité de l'appli
 
-Remplis `config.app` (nom, `nomLong`, description, `cours`, clé, accroche, mascotte, couleurs en clair **et** en sombre, modules), puis les `rangs` et les `badges` dans le vocabulaire du cours (garde les `id` des badges du moteur). Retire l'exemple `projet` de `config.json`, ou remplace-le par celui du cours (réponse 2). Lance `python3 tools/configurer.py`. Commite.
+Remplis `config.app` (nom, `nomLong`, description, `cours`, clé, accroche, mascotte, couleurs en clair **et** en sombre, `langage`, modules), puis les `rangs` et les `badges` dans le vocabulaire du cours (garde les `id` des badges du moteur). Retire l'exemple `projet` de `config.json`, ou remplace-le par celui du cours (réponse 2). Lance `python3 tools/configurer.py`. Commite.
 
 ## 4. Le programme (à faire valider AVANT d'écrire les unités)
 
@@ -87,11 +88,11 @@ Présente le plan à l'élève (en résumé, avec le tableau des unités) et **a
 
 ## 5. Les modules manquants
 
-Si la matière demande un module qui n'existe pas encore (PHP, terminal…), et que l'élève veut du code exécuté, construis-le d'abord en suivant `docs/modules.md`, avec ses tests. Propose ensuite de le reporter dans le dépôt du modèle (les cours suivants en profiteront). Sinon, utilise les exercices de code sans exécution (profil « code, autre langage »).
+Si la matière demande un module d'exécution qui n'existe pas encore (Python, SQL, terminal…) et que l'élève veut du code exécuté, construis-le d'abord en suivant `docs/modules.md`, avec son unité d'exemple `tools/exemples/<langage>/` et ses tests. Propose ensuite de le reporter dans le dépôt du modèle (les cours suivants en profiteront). Sinon, le mode code sans exécution suffit (profil « code, autre langage ») : rien à construire.
 
 ## 6. Écrire les unités, chacune dans son propre contexte
 
-1. Retire les unités d'exemple (`u01-apprendre`, `u02-catalogue`) de `config.json` et supprime leurs fichiers, ainsi que les pages inutiles de `content/pages/`.
+1. Retire les unités d'exemple (`u01-apprendre`, `u02-catalogue`) de `config.json` et supprime leurs fichiers, ainsi que les pages inutiles de `content/pages/`. Supprime aussi `tools/exemples/` (les unités de test des langages, utiles au seul modèle) et, si le cours n'est pas en PHP, `js/vendor/php-wasm/` (18 Mo inutiles ; `/mettre-a-jour-moteur` ne remet ni l'un ni l'autre).
 2. Crée tous les squelettes : `python3 tools/nouvelle-unite.py u01 "Titre"` (puis u02, u03…). Le sommaire est alors complet ; chaque unité n'a plus qu'à être remplie.
 3. Pour chaque unité, lance un **sous-agent** (outil Agent) avec la compétence `ecrire-unite`, par exemple :
 
