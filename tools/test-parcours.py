@@ -157,6 +157,14 @@ try:
             pg.wait_for_selector("main .diag")
             if "fruit" not in pg.inner_text("main .resultat"):
                 problemes.append("console libre : l'erreur n'est pas expliquée")
+        # 4 bis. le projet (s'il y en a un) : cocher un critère, il reste coché
+        if pg.evaluate("() => !!D.config.projet"):
+            pg.click('.tab[data-go="home"]'); pg.click('.daily.projet [data-go="projet"]')
+            pg.click(".critere .coche")
+            if args.captures:
+                pg.screenshot(path=str(CAP / "vue-projet.png"), full_page=True)
+            if pg.evaluate("() => Object.keys(ST.projet).length") != 1: problemes.append("projet : le critère coché n'est pas enregistré")
+            pg.click('.tab[data-go="home"]')
         # 5. la sauvegarde survit à un rechargement
         xp = pg.evaluate("() => ST.xp")
         pg.reload(); pg.wait_for_selector(".node")

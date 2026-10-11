@@ -115,7 +115,7 @@ I.logo = logoSVG();
 /* ---------------- sauvegarde ---------------- */
 // La progression est indexée par des identifiants explicites (jamais par position) : ajouter du contenu ne perd rien.
 function freshState(){
-  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null, installPlusTard:null, installJamais:false };
+  return { v:1, xp:0, streak:{count:0,last:null}, days:{}, done:{}, quiz:{}, boss:{}, games:{}, badges:{}, erreurs:[], notions:{}, daily:{}, fiches:{}, ouvertes:{}, brouillons:{}, stats:{ premierCoup:0, bugs:0, codes:0 }, theme:null, installPlusTard:null, installJamais:false, projet:{} };
 }
 function normaliser(o){
   const s = freshState();
@@ -124,7 +124,7 @@ function normaliser(o){
   if (!obj(o)) return s;
   s.xp = Math.max(0, num(o.xp, 0));
   if (obj(o.streak)) s.streak = { count:Math.max(0, num(o.streak.count, 0)), last:typeof o.streak.last === "string" ? o.streak.last : null };
-  for (const k of ["days", "done", "games", "badges", "daily", "fiches", "ouvertes", "brouillons"]) if (obj(o[k])) s[k] = o[k];
+  for (const k of ["days", "done", "games", "badges", "daily", "fiches", "ouvertes", "brouillons", "projet"]) if (obj(o[k])) s[k] = o[k];
   for (const k of ["quiz", "boss", "notions"]) if (obj(o[k])) s[k] = Object.fromEntries(Object.entries(o[k]).filter(([, q]) => obj(q)));
   if (Array.isArray(o.erreurs)) s.erreurs = o.erreurs.filter(x => typeof x === "string").slice(-80);
   if (obj(o.stats)) for (const k of Object.keys(s.stats)) s.stats[k] = Math.max(0, num(o.stats[k], 0));

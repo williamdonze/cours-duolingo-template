@@ -17,6 +17,16 @@
     "content/unites/u02-catalogue.json"
   ],
   "aVenir": [],
+  "projet": {
+    "titre": "Ton plan de révision",
+    "source": "Exemple du modèle (à remplacer par le projet du cours, ou à retirer)",
+    "description": "Le projet du cours, en fil rouge : ses critères officiels, à cocher quand ton travail les remplit. Chacun renvoie aux leçons qui l'enseignent.",
+    "criteres": [
+      { "id": "p-recuperation", "texte": "Chaque séance commence par **se tester** de mémoire, pas par relire.", "fiches": ["recuperation"], "unite": "u01" },
+      { "id": "p-espacement", "texte": "Les révisions sont **étalées** sur plusieurs jours, de plus en plus espacées.", "fiches": ["repetition-espacee"], "unite": "u01" },
+      { "id": "p-melange", "texte": "Les exercices de chapitres différents sont **mélangés**.", "fiches": ["entrelacement"], "unite": "u01" }
+    ]
+  },
   "rangs": [
     { "xp": 0, "nom": "Débutant" },
     { "xp": 100, "nom": "Apprenti" },

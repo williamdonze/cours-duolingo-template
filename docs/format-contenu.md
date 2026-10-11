@@ -25,6 +25,8 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
     "description": "Apprendre le JavaScript en jouant…",  // une phrase (moteurs de recherche, installation)
     "cle": "progweb2",                           // minuscules et tirets : nomme la sauvegarde. NE PLUS LA CHANGER une fois publié
     "langue": "fr",
+    "cours": "Programmation web 2, HEIG-VD, 2025-2026",   // facultatif : le cours officiel (affiché dans le README)
+    "site": "https://…github.io/…/",             // facultatif : adresse du site (sinon déduite du dépôt GitHub)
     "accroche": "On part de zéro et on va jusqu'aux exercices de ton cours.",   // première bulle de la mascotte
     "mascotte": { "nom": "Coco", "cadre": ["{", "}"], "corps": "#FFF6E4", "bord": "#E3C98F" },
                                                  // cadre : ["{", "}"] (accolades dessinées), deux textes courts (["<?", "?>"], ["$", "_"]), ou []
@@ -38,6 +40,7 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
   "seuilValidation": 0.8,                       // 80 % au quiz pour ouvrir l'unité suivante
   "unites": ["content/unites/u01-bases.json", …], // ordre du parcours ; GitHub Pages ne sait pas lister un dossier, d'où cette liste
   "aVenir": [{ "titre": "…", "resume": "…", "icone": "…" }],   // cartes « Bientôt » en bas de l'accueil
+  "projet": { … },                               // facultatif : le projet du cours en fil rouge (voir ci-dessous)
   "rangs": [{ "xp": 0, "nom": "Débutant" }, …],
   "badges": [{ "id": "…", "nom": "…", "desc": "…", "icone": "etoile", "module": "code-js" }]   // "module" (facultatif) : badge masqué si ce module n'est pas activé ; icônes : etoile, flamme, medaille, trophee, boss, oeuf, livre, cible, accolades, porte, bug, terminal, melange
 }
@@ -45,7 +48,20 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
 
 Les badges « unité validée » et « boss vaincus » sont **générés automatiquement** pour chaque unité : rien à ajouter. Les badges `premier-pas`, `theoricien`, `sans-faute`, `defi`, `sans-indice`, `serie-3`, `serie-7`, `serie-30` (et, avec du code, `premier-coup`, `codeur`, `chasseur-bugs`) sont attribués par le moteur : garde leurs `id`, change librement leur nom et leur description.
 
-Après avoir changé la section `app` : `python3 tools/configurer.py` (titre de la page, appli installée, nom du cache, icônes dessinées d'après la mascotte).
+**Le projet du cours** (`projet`, facultatif) : quand le cours a un projet noté à côté des exercices et que l'élève veut l'intégrer, ses critères officiels deviennent une liste à cocher (vue « Projet », ouverte depuis l'accueil), chacun relié aux fiches et à l'unité qui l'enseignent. **Pas de quiz ni de boss sur l'organisation du projet** (« que faut-il faire en premier ? ») : seules ses parties qui s'exercent vraiment deviennent des boss, dans les unités.
+
+```jsonc
+"projet": {
+  "titre": "Projet libre",
+  "source": "Consignes du projet, semaine 3",          // d'où viennent les critères
+  "description": "Une ou deux phrases (texte enrichi).",
+  "criteres": [
+    { "id": "p-i18n", "texte": "La gestion multilingue fonctionne sur toutes les pages.", "fiches": ["cookie-langue"], "unite": "u07" }
+  ]                                                     // id stable (la case cochée est sauvegardée), fiches et unité facultatives
+}
+```
+
+Après avoir changé la section `app` : `python3 tools/configurer.py` (titre de la page, écran de chargement, appli installée, nom du cache, icônes dessinées d'après la mascotte, `icones/mascotte.svg` et `README.md` via `tools/generer-readme.py`).
 
 **Les modules** (`app.modules`) : les types d'exercices qui exécutent du code ne sont permis que si leur module est activé (le validateur le vérifie).
 

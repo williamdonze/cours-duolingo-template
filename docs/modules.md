@@ -31,4 +31,4 @@ Un type = une fonction `Q.monType = (q, onChange) => ({ el, ready(), check(), re
 
 ## Faire profiter tous les cours d'une amélioration
 
-Une amélioration du moteur faite dans le dépôt d'un cours (nouveau module, correction d'affichage) se reporte ici, dans le modèle : copier les fichiers de `js/`, `css/`, `tools/` concernés, relancer les trois tests, documenter. Les autres cours la récupèrent en copiant à leur tour ces fichiers (leur `content/` ne change pas).
+Une amélioration du moteur faite dans le dépôt d'un cours (nouveau module, correction d'affichage) se reporte ici, dans le modèle : copier les fichiers de `js/`, `css/`, `tools/` concernés, relancer les trois tests, documenter. Les autres cours la récupèrent avec `/mettre-a-jour-moteur` (`tools/mettre-a-jour-moteur.py` : leur `content/` ne change pas).

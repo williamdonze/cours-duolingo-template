@@ -9,16 +9,19 @@ Issu de [Pampre](https://github.com/williamdonze/pampre) (le vin) et de [ProgWeb
 1. Sur GitHub, en haut de ce dépôt : **Use this template → Create a new repository** (par exemple `cours-php`).
 2. Ouvre une session Claude Code sur le nouveau dépôt.
 3. Tape **`/nouveau-cours`** et envoie les supports du cours (zip des pages d'exercices, slides, PDF, lien du site).
-4. Claude te propose un nom, une mascotte et un programme d'unités ; tu valides ; il écrit les unités, les teste, et pousse.
+4. Claude te pose toutes ses questions d'un coup (type de cours, projet, examen, difficultés, nom, mascotte), te propose un programme d'unités ; tu valides ; il écrit les unités (chacune dans son propre contexte, pour aller plus vite), les teste, génère le README du cours, et pousse.
 5. Mise en ligne : **Settings → Pages → Deploy from a branch → `main`, `/ (root)`**. Le site est à `https://<ton-compte>.github.io/<dépôt>/`.
 
-Pour un nouveau TP plus tard : envoie la page du TP en disant « voici la nouvelle page de TP ».
+Ensuite :
+- **la suite du cours** : dépose les nouveaux fichiers dans `supports/` (sur GitHub : *Add file → Upload files*), puis tape **`/ajouter-supports`** ;
+- **une unité à la fois** (pour étaler le travail sur plusieurs sessions) : **`/ecrire-unite u05`** ;
+- **les améliorations du modèle** : **`/mettre-a-jour-moteur`** dans le dépôt du cours.
 
 ## Ce qu'il y a dedans
 
 - **`content/`** : tout le contenu, en JSON (une unité par fichier). La section `app` de `content/config.json` règle le nom, la mascotte, les couleurs et les **modules** (`code-js` pour du JavaScript, `dom` pour des pages web, aucun pour un cours sans code).
 - Deux **unités d'exemple** : « Bien apprendre » (un cours sans code, avec un boss « étude de cas ») et « Catalogue des exercices » (un exemple de chaque type). Elles sont retirées quand on crée un vrai cours.
-- **`docs/format-contenu.md`** : la référence du format. **`docs/modules.md`** : ajouter un langage (PHP, SQL…) ou un terminal simulé.
+- **`docs/format-contenu.md`** : la référence du format ; **`docs/format-memo.md`** : son mémo court. **`docs/modules.md`** : ajouter un langage (PHP, SQL…) ou un terminal simulé. **`docs/feuille-de-route.md`** : les améliorations prévues.
 
 ## Lancer et tester
 

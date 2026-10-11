@@ -2,7 +2,9 @@
 """Validation statique du contenu (sans navigateur) : à lancer après CHAQUE modification de content/.
 Vérifie la structure des JSON, les identifiants (uniques, stables), le parcours, les champs obligatoires
 de chaque type d'exercice, les liens vers les fiches. Code de sortie 1 en cas d'erreur ; les ⚠ sont à relire.
-Le test complet (exécution réelle des solutions et des erreurs typiques) est tools/tester-exercices.py."""
+Le test complet (exécution réelle des solutions et des erreurs typiques) est tools/tester-exercices.py.
+
+--fiches : affiche aussi les fiches de chaque unité (id et titre), pour s'y relier sans relire les unités."""
 import json, re, sys
 from pathlib import Path
 
@@ -135,6 +137,26 @@ for chemin, u in unites:
     texte = json.dumps(u, ensure_ascii=False)
     for m in re.finditer(r"\[\[([a-z][a-z0-9-]*)(?:\|[^\]]+)?\]\]", texte):
         if m.group(1) not in ids_fiche: E(f"{nom} : lien vers une fiche inconnue [[{m.group(1)}]]")
+
+# projet du cours en fil rouge (facultatif) : critères à cocher, reliés aux fiches et aux unités
+pj = config.get("projet")
+if pj is not None:
+    if not pj.get("titre"): E("config.json : projet sans titre")
+    if not pj.get("criteres"): E("config.json : projet sans critères")
+    ids_c = set()
+    for c in pj.get("criteres", []):
+        if not c.get("id") or not c.get("texte"): E("config.json : chaque critère du projet a un id et un texte"); continue
+        if c["id"] in ids_c: E(f"config.json : critère de projet en double {c['id']}")
+        ids_c.add(c["id"])
+        for f in c.get("fiches", []):
+            if f not in ids_fiche: E(f"config.json : critère {c['id']} : fiche inconnue {f}")
+        if c.get("unite") and c["unite"] not in ids_unite: E(f"config.json : critère {c['id']} : unité inconnue {c['unite']}")
+        if not c.get("fiches") and not c.get("unite"): W(f"config.json : critère {c['id']} relié à aucune fiche ni unité")
+
+if "--fiches" in sys.argv:
+    for chemin, u in unites:
+        print(f"{u.get('id')} · {u.get('titre')}")
+        for f2 in u.get("fiches", []): print(f"   {f2['id']} : {f2.get('titre', '')}")
 
 total = len(ids_q)
 print(f"{len(unites)} unités · {len(ids_fiche)} fiches · {total} questions")

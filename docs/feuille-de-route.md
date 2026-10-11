@@ -14,18 +14,20 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] Profil : le compteur « codes qui passent les tests » seulement avec le module code-js
 
 ## Lot 3 — compétences et documents
-- [ ] `/nouveau-cours` : toutes les questions en une fois au début (nom, mascotte, couleur, projet, examen, difficultés, niveau)
-- [ ] Question du **projet** : de côté / fil rouge (vue « Projet » : critères officiels en liste à cocher, liés aux leçons) / boss seulement pour les parties qui s'exercent ; jamais de question sur l'organisation du projet
-- [ ] Découpage : `/nouveau-cours` s'arrête au programme validé ; chaque unité est écrite dans un contexte propre (sous-agent ou session `/ecrire-unite uNN`) avec un résumé court
-- [ ] `docs/format-memo.md` (mémo court du format, un exemple minimal par type)
-- [ ] `tools/nouvelle-unite.py uNN "titre"` : squelette d'unité + entrée dans `config.json`
-- [ ] `docs/cours/index.md` : quel support sert à quelle unité (on ne lit que ce qu'il faut)
-- [ ] Tests ciblés par unité, parcours complet une fois à la fin
-- [ ] `tools/generer-readme.py` (lancé par `configurer.py`) : hero (mascotte + nom), description, lien, tableau des unités, installation sur téléphone, mention « créé à partir du modèle de William Donzé (https://github.com/williamdonze) »
-- [ ] `/ajouter-supports` : dossier `supports/` (dépôt possible depuis GitHub, « Add file → Upload files »), registre des supports traités, proposition d'unités / ajouts / boss, validation, écriture, tests, README
-- [ ] `/mettre-a-jour-moteur` : reprendre `js/`, `css/`, `tools/` du modèle dans un cours existant, sans toucher au contenu
-- [ ] Profil de cours au départ (code, par cœur, méthodes, langue) : types mis en avant, badges, rangs, jeux
-- [ ] Unité « examen blanc » proposée en option
+- [x] `/nouveau-cours` : toutes les questions en une fois au début (nom, mascotte, couleur, projet, examen, difficultés, niveau)
+- [x] Question du **projet** : de côté / fil rouge (vue « Projet » : critères officiels en liste à cocher, liés aux leçons) / boss seulement pour les parties qui s'exercent ; jamais de question sur l'organisation du projet
+- [x] Découpage : `/nouveau-cours` s'arrête au programme validé ; chaque unité est écrite dans un contexte propre (sous-agent ou session `/ecrire-unite uNN`) avec un résumé court
+- [x] `docs/format-memo.md` (mémo court du format, un exemple minimal par type)
+- [x] `tools/nouvelle-unite.py uNN "titre"` : squelette d'unité + entrée dans `config.json`
+- [x] `docs/cours/index.md` : quel support sert à quelle unité (on ne lit que ce qu'il faut)
+- [x] Tests ciblés par unité (un port par sous-agent), parcours complet une fois à la fin ; `valider-contenu.py --fiches`
+- [x] `tools/generer-readme.py` (lancé par `configurer.py`) : hero (mascotte + nom), description, lien, tableau des unités, installation sur téléphone, mention « créé à partir du modèle de William Donzé (https://github.com/williamdonze) »
+- [x] `/ajouter-supports` : dossier `supports/` (dépôt possible depuis GitHub, « Add file → Upload files »), registre des supports traités, proposition d'unités / ajouts / boss, validation, écriture, tests, README
+- [x] `/mettre-a-jour-moteur` : reprendre `js/`, `css/`, `tools/` du modèle dans un cours existant, sans toucher au contenu
+- [x] Profil de cours au départ (code, par cœur, méthodes, langue) : types mis en avant, badges, rangs, jeux (dans `/nouveau-cours`)
+- [x] Unité « examen blanc » proposée en option (question posée au départ ; c'est une unité ordinaire, sans chronomètre)
+- [x] `/ecrire-unite` : une unité dans son propre contexte (sous-agent ou session)
+- [x] Vue « Projet » (`config.projet`), validée et testée
 
 ## Lot 4 — mascottes
 - [ ] Catalogue de formes (`"forme"` : œuf, éléphant — repris de ProgServ2 —, chouette, renard, goutte, livre…)

@@ -261,7 +261,7 @@ function renderTop(){
 function render(){
   shell(); renderTop();
   $app.innerHTML = "";
-  const v = { home:viewHome, defi:viewDefi, theorie:viewTheorie, console: aModule("code-js") ? viewConsole : null, profil:viewProfil }[VIEW] || viewHome;
+  const v = { home:viewHome, defi:viewDefi, theorie:viewTheorie, console: aModule("code-js") ? viewConsole : null, profil:viewProfil, projet: D.config.projet ? viewProjet : null }[VIEW] || viewHome;
   $app.appendChild(v());
 }
 
@@ -277,6 +277,11 @@ function viewHome(){
   const daily = h(`<div class="panel daily ${done ? "done" : ""}"><div class="ico">${done ? I.check : I.star}</div><div class="txt"><h3>Défi du jour</h3><p>${done ? "Relevé ! Reviens demain pour un nouveau défi." : dues.length ? `${pluriel(dues.length, "notion")} à revoir aujourd'hui, en priorité. +30 XP.` : "6 questions de révision sur ce que tu as appris. +30 XP."}</p></div><button class="btn ${done ? "ghost" : "gold"} small" data-daily>${done ? "Rejouer" : "Jouer"}</button></div>`);
   daily.querySelector("[data-daily]").onclick = startDaily;
   el.appendChild(daily);
+  if (D.config.projet) {
+    const pj = D.config.projet, faits = pj.criteres.filter(c => ST.projet[c.id]).length;
+    const p = h(`<div class="panel daily projet"><div class="ico">${I.target}</div><div class="txt"><h3>${esc(pj.titre)}</h3><p>${faits === pj.criteres.length ? "Tous les critères sont prêts." : `${faits} critère${faits > 1 ? "s" : ""} prêt${faits > 1 ? "s" : ""} sur ${pj.criteres.length} : chacun renvoie aux leçons qui l'enseignent.`}</p></div><button class="btn ghost small" data-go="projet">Voir</button></div>`);
+    el.appendChild(p);
+  }
   if (proposerInstall()) setTimeout(() => { if (proposerInstall() && VIEW === "home" && !document.querySelector("body > .session, body > .modal-bg, body > .drawer")) aideInstall(true); }, 900);
   let currentFound = false;
   D.unites.forEach((u, ui) => {
@@ -330,6 +335,36 @@ function viewDefi(){
     <div class="kpi" style="color:var(--flame-ink)">${I.flame}<div><b style="color:var(--ink)">${streakNow()}</b><span>jours de série</span></div></div>
     <div class="kpi" style="color:var(--prim-ink)">${I.medal}<div><b style="color:var(--ink)">${Object.values(ST.notions).filter(n => n.b >= 4).length}</b><span>notions solides</span></div></div>
     <div class="kpi" style="color:var(--ko-ink)">${I.book}<div><b style="color:var(--ink)">${dues.length}</b><span>notions à revoir</span></div></div></div>`));
+  return el;
+}
+
+/* ---------------- vue : projet (config.projet, facultatif) ----------------
+   Le projet du cours en fil rouge : ses critères officiels en liste à cocher (auto-évaluation),
+   chacun relié aux fiches et à l'unité qui l'enseignent. Pas de quiz sur le projet lui-même. */
+function viewProjet(){
+  const pj = D.config.projet;
+  const el = h(`<main class="wrap"></main>`);
+  const unite = id => D.unites.find(u => u.id === id);
+  const dessiner = () => {
+    const faits = pj.criteres.filter(c => ST.projet[c.id]).length;
+    el.innerHTML = "";
+    el.appendChild(h(`<div><button class="btn ghost small" data-go="home">← Parcours</button><div class="eyebrow" style="margin-top:16px">${esc(pj.source || "Projet du cours")}</div><h1 style="font-size:30px">${esc(pj.titre)}</h1>${pj.description ? `<div class="rich muted" style="margin:6px 0 4px">${rich(pj.description)}</div>` : ""}<p class="muted" style="margin-bottom:14px">Coche un critère quand ton projet le remplit. ${faits} sur ${pj.criteres.length}.</p><div class="meter" style="margin-bottom:18px"><i style="width:${Math.round(faits / pj.criteres.length * 100)}%"></i></div></div>`));
+    const liste = h(`<div class="criteres"></div>`);
+    for (const c of pj.criteres) {
+      const u = c.unite && unite(c.unite);
+      const liens = [...(c.fiches || []).filter(f => FICHES[f]).map(f => `<button type="button" class="fl" data-fiche="${esc(f)}">${esc(FICHES[f].titre)}</button>`), ...(u ? [`unité ${u.numero} : ${esc(u.titre)}`] : [])];
+      liste.appendChild(h(`<div class="critere ${ST.projet[c.id] ? "fait" : ""}"><button type="button" class="coche" data-critere="${esc(c.id)}" aria-pressed="${!!ST.projet[c.id]}" aria-label="Critère rempli">${I.check}</button><div><p>${richInline(c.texte)}</p>${liens.length ? `<p class="note">Pour t'y préparer : ${liens.join(", ")}</p>` : ""}</div></div>`));
+    }
+    el.appendChild(liste);
+  };
+  el.addEventListener("click", e => {
+    const b = e.target.closest("[data-critere]"); if (!b) return;
+    const id = b.dataset.critere;
+    if (ST.projet[id]) delete ST.projet[id]; else ST.projet[id] = todayStr();
+    save(); dessiner();
+    el.querySelector(`[data-critere="${CSS.escape(id)}"]`)?.focus();
+  });
+  dessiner();
   return el;
 }
 

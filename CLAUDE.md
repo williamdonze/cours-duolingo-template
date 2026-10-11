@@ -1,6 +1,6 @@
 # Modèle d'appli de cours façon Duolingo
 
-Ce dépôt est un **modèle** : un moteur d'apprentissage façon **Duolingo** (leçons courtes, exercices interactifs, XP, séries, badges, défi du jour, répétition espacée), sans aucun cours dedans, sauf deux unités d'exemple. On crée l'appli d'un cours avec **« Use this template »** sur GitHub, puis la compétence **`/nouveau-cours`** (`.claude/skills/nouveau-cours/SKILL.md`) la remplit à partir des supports du cours.
+Ce dépôt est un **modèle** : un moteur d'apprentissage façon **Duolingo** (leçons courtes, exercices interactifs, XP, séries, badges, défi du jour, répétition espacée), sans aucun cours dedans, sauf deux unités d'exemple. On crée l'appli d'un cours avec **« Use this template »** sur GitHub, puis la compétence **`/nouveau-cours`** (`.claude/skills/nouveau-cours/SKILL.md`) la remplit à partir des supports du cours ; **`/ajouter-supports`** intègre la suite du cours, **`/mettre-a-jour-moteur`** récupère les améliorations du modèle.
 
 Il descend de **Pampre** (le « Duolingo du vin », https://github.com/williamdonze/pampre) et de **ProgWeb 2** (JavaScript, https://github.com/williamdonze/progweb2), d'où viennent le moteur, le bac à sable de code et l'unité « catalogue ». Public : l'élève, francophone. Langue du site, du contenu et des commentaires : **français**, tutoiement.
 
@@ -31,14 +31,18 @@ js/questions.js            Moteur d'exercices : Q[type] pour les 23 types
 js/app.js                  runSession, leçons / jeux / quiz / boss (code ou étude de cas), défi du jour, vues, démarrage
 js/banc.js, js/worker.js, js/editeur.js     Module code-js : banc d'essai (tests, diagnostics, erreurs traduites), Web Worker, éditeur
 js/dom.js, js/dom-harnais.js                Module dom : page web dans une iframe isolée, harnais de test
-content/config.json        app (nom, clé, mascotte, couleurs, modules), sommaire des unités, rangs, badges
+content/config.json        app (nom, clé, mascotte, couleurs, modules), sommaire des unités, projet (facultatif), rangs, badges
 content/unites/uNN-*.json  Une unité par fichier : fiches, leçons, jeux, quiz, boss
 content/pages/             Pages web des exercices DOM (module dom)
-tools/                     Tests et outils (voir « Tests »), configurer.py, build-icones.py
+tools/                     Tests et outils (voir « Tests »), configurer.py, build-icones.py, generer-readme.py,
+                           nouvelle-unite.py (squelette d'unité), mettre-a-jour-moteur.py (moteur du modèle → cours)
+supports/                  Les supports bruts déposés par l'élève (slides, PDF, énoncés) ; registre dans docs/cours/index.md
 docs/format-contenu.md     LA référence du format du contenu (config, tous les types, tests, diagnostics, boss)
+docs/format-memo.md        Le mémo court du format : de quoi écrire une unité sans lire la référence entière
 docs/modules.md            Les modules, et comment en ajouter un (PHP, terminal…)
 docs/feuille-de-route.md   Les améliorations prévues du modèle, par lots (à cocher)
-.claude/skills/nouveau-cours/   La procédure « créer l'appli d'un nouveau cours »
+.claude/skills/            nouveau-cours (créer l'appli d'un cours), ecrire-unite (une unité, dans son propre contexte),
+                           ajouter-supports (la suite du cours), mettre-a-jour-moteur (récupérer les améliorations du modèle)
 manifest.webmanifest, sw.js, icones/   Appli installable, hors connexion (configurer.py change le nom du cache)
 ```
 
@@ -54,6 +58,7 @@ manifest.webmanifest, sw.js, icones/   Appli installable, hors connexion (config
   - `resoudre()` : remplit la bonne réponse ; utilisé par `tools/test-parcours.py` (mode `?test`, `window.__q`).
   - Ajouter le libellé dans `KIND_NAME`, les champs dans `TYPES` de `tools/valider-contenu.py`, la doc dans `docs/format-contenu.md`, un exemple dans `u02-catalogue`.
 - **Boss** : un boss de code (type `boss`, module `code-js`) ou une **étude de cas** (`questions` : scénario + questions de tout type, réussie au seuil de validation, `startEtude`).
+- **Projet** (facultatif, `config.projet`) : le projet noté du cours en fil rouge, vue « Projet » ouverte depuis l'accueil ; ses critères officiels en liste à cocher (`ST.projet`), reliés aux fiches et aux unités. Jamais de quiz ni de boss sur l'organisation d'un projet.
 - **Bac à sable de code** (module `code-js`) : `executer({ code, donnees, prelude, tests, contexte })` crée un Worker neuf, tué après 2 s ; `executerTout` (banc.js) exécute, teste chaque cas avec des arguments gelés, analyse le code (interdit, obligatoire, conseils), diagnostique le premier cas raté. Détails dans `docs/format-contenu.md` et le CLAUDE.md de ProgWeb 2.
 - **Bac à sable DOM** (module `dom`) : iframe `sandbox="allow-scripts"` (sans accès à l'appli ni à la sauvegarde), code de l'élève importé comme module, `tests.etapes` (clics, scripts, comptages).
 - **Progression** : unité ouverte si première, déjà ouverte (`ST.ouvertes`) ou quiz précédent validé (seuil 80 %). Les boss ne bloquent pas la suite. Identifiants explicites partout : ajouter du contenu ne casse jamais une sauvegarde. Ne **jamais** changer l'`id` d'un élément existant, ni `app.cle` une fois publié.
@@ -71,10 +76,13 @@ manifest.webmanifest, sw.js, icones/   Appli installable, hors connexion (config
 
 ## Procédures
 
-- **Nouveau cours** : la compétence `/nouveau-cours` (supports → identité → programme validé par l'élève → modules → unités → tests → publication).
-- **Nouvelle page de TP** (cours déjà créé) : lire la page et lister les exercices (si le site est bloqué, demander à l'élève de l'autoriser dans les réglages réseau ou d'envoyer la page enregistrée ; ne pas confondre la page d'accueil et les TP) ; repérer les nouvelles notions (`grep '"id"' content/unites/*.json`, `docs/programme.md`) ; créer leçons, fiches et boss ; ajouter l'unité dans `config.json` ; mettre à jour `docs/programme.md` et « Ce cours » ; lancer les trois tests.
+- **Nouveau cours** : `/nouveau-cours` (supports → toutes les questions en une fois → identité → programme validé par l'élève → modules → une unité par sous-agent avec `/ecrire-unite` → tests → README → publication).
+- **Suite du cours** (nouveaux supports, nouvelle page de TP) : `/ajouter-supports` (registre `docs/cours/index.md`, proposition validée par l'élève, nouvelles unités ou compléments sans changer un seul `id`).
+- **Une unité à la fois** (reprendre, étaler le travail sur plusieurs sessions) : `/ecrire-unite uNN`.
+- **Récupérer les améliorations du modèle** dans un cours : `/mettre-a-jour-moteur`.
 - **Nouveau module** (PHP, SQL, terminal…) : `docs/modules.md`.
-- **Amélioration du moteur** faite dans un cours : la reporter ici (mêmes fichiers `js/`, `css/`, `tools/`), relancer les tests du modèle.
+- **Amélioration du moteur** faite dans un cours : la reporter ici (mêmes fichiers `js/`, `css/`, `tools/`), relancer les tests du modèle. Ce qui est propre à un cours va dans `content/` (données), jamais dans les fichiers communs : sinon `/mettre-a-jour-moteur` l'écrase.
+- **Améliorations prévues** : `docs/feuille-de-route.md` (par lots, à cocher).
 
 ## Tests
 
@@ -85,7 +93,8 @@ python3 tools/valider-contenu.py        # structure du contenu, ids, champs, lie
 python3 tools/tester-exercices.py       # dans Chromium : chaque solution passe, chaque erreur typique échoue avec le bon diagnostic,
                                         # chaque « prédire » est juste, chaque exemple tourne (--unite u02, --avertissements)
 python3 tools/test-parcours.py          # tout le parcours par l'interface, défi du jour, vues, sauvegarde (--captures)
-python3 tools/configurer.py             # après un changement de config.app : index.html, manifest, sw.js, icônes
+python3 tools/configurer.py             # après un changement de config.app : index.html, manifest, sw.js, icônes, README (--sans-icones)
+python3 tools/valider-contenu.py --fiches   # + la liste des fiches par unité (pour s'y relier)
 ```
 
 GitHub Actions (`.github/workflows/tests.yml`) lance les trois tests à chaque push.

@@ -148,6 +148,17 @@ main{padding-block:20px 110px}
 .daily h3{font-size:19px}
 .daily p{color:var(--muted);font-size:14px}
 .daily.done .ico{background:var(--ok-soft);color:var(--ok-deep)}
+.daily.projet .ico{background:var(--prim-soft);color:var(--prim-ink)}
+/* ---------- projet : critères à cocher ---------- */
+.criteres{display:grid;gap:10px;margin-bottom:28px}
+.critere{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:12px}
+.critere p{font-weight:700;line-height:1.45}
+.critere .note{font-weight:600;margin-top:6px}
+.coche{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:transparent;display:grid;place-items:center}
+.coche svg{width:28px;height:28px;opacity:0}
+.critere.fait{border-color:var(--ok)}
+.critere.fait .coche{border-color:var(--ok);color:var(--ok)}
+.critere.fait .coche svg{opacity:1}
 @media (max-width:360px){.daily{flex-wrap:wrap}.daily .txt{flex:1 1 calc(100% - 66px)}.daily .btn{flex:1 1 100%}}
 
 .unit{margin-bottom:36px}
