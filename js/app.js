@@ -489,6 +489,7 @@ async function boot(){
   try {
     D.config = await getJSON("content/config.json");
     appliquerApp(D.config.app);
+    await chargerMascotte();
     $app.innerHTML = `<main class="wrap chargement">${mascot("happy")}<p>Chargement des unités…</p></main>`;
     D.unites = await Promise.all(D.config.unites.map(getJSON));
   } catch(err) {

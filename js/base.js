@@ -84,32 +84,126 @@ const I = {
 };
 const ICON_BY_NAME = { etoile:I.star, flamme:I.flame, medaille:I.medal, trophee:I.trophy, boss:I.boss, oeuf:I.egg, livre:I.book, cible:I.target, accolades:I.braces, porte:I.wallet, bug:I.bug, terminal:I.terminal, melange:I.shuffle };
 
-/* mascotte (config.app.mascotte) : un œuf souriant dans un « cadre » propre au cours :
-   ["{", "}"] (accolades dessinées, cours de code), deux textes quelconques (["<?", "?>"], ["$", "_"]…), ou [] (pas de cadre) */
+/* ---------------- mascotte (config.app.mascotte, voir docs/format-contenu.md § 1) ----------------
+   Une forme du catalogue (MASCOTTES : œuf, éléphant, chouette, renard, goutte, livre), un accessoire facultatif (ACCESSOIRES),
+   un « cadre » facultatif pour les cours de code (["{", "}"] dessinées, ou deux textes courts : ["<?", "?>"], ["$", "_"]),
+   ou un dessin libre (mascotte.fichier : un SVG avec des groupes id="humeur-happy", "humeur-sad", "humeur-wow").
+   Humeurs : happy, sad, wow. Couleurs : corps, bord, accent (oreilles, ailes, dos du livre…). */
+const ENCRE = "#2a2340";
 const ACCOLADES = [`M22 18c-9 0-12 5-12 12v18c0 6-3 10-8 12 5 2 8 6 8 12v18c0 7 3 12 12 12`, `M98 18c9 0 12 5 12 12v18c0 6 3 10 8 12-5 2-8 6-8 12v18c0 7-3 12-12 12`];
-function cadreSVG(couleur){
+function cadreSVG(couleur, detoure = false){
   const c = APP.mascotte.cadre || [];
   if (!c.length) return "";
   if (c[0] === "{" && c[1] === "}") return ACCOLADES.map(d => `<path d="${d}" stroke="${couleur}" stroke-width="7" fill="none" stroke-linecap="round"/>`).join("");
-  const t = (x, txt, a) => `<text x="${x}" y="72" text-anchor="${a}" font-family="JetBrains Mono, ui-monospace, monospace" font-weight="800" font-size="${txt.length > 2 ? 22 : txt.length > 1 ? 28 : 40}" fill="${couleur}">${esc(txt)}</text>`;
+  const contour = detoure ? ` stroke="var(--bg, #FAF7F0)" stroke-width="5" paint-order="stroke" stroke-linejoin="round"` : "";
+  const t = (x, txt, a) => `<text x="${x}" y="${detoure ? 108 : 72}" text-anchor="${a}" font-family="JetBrains Mono, ui-monospace, monospace" font-weight="800" font-size="${txt.length > 2 ? 22 : txt.length > 1 ? 28 : 40}" fill="${couleur}"${contour}>${esc(txt)}</text>`;
   return t(14, c[0] || "", "middle") + t(106, c[1] || "", "middle");
 }
+// une bouche à l'échelle s, centrée en (x, y)
+function boucheSVG(mood, x, y, s = 1){
+  if (mood === "sad") return `<path d="M${x - 9 * s} ${y + 5 * s}q${9 * s} ${-7 * s} ${18 * s} 0" stroke="${ENCRE}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  if (mood === "wow") return `<ellipse cx="${x}" cy="${y + 4 * s}" rx="${6 * s}" ry="${7 * s}" fill="${ENCRE}"/>`;
+  return `<path d="M${x - 11 * s} ${y}q${11 * s} ${11 * s} ${22 * s} 0" stroke="${ENCRE}" stroke-width="3.5" fill="#fff" stroke-linecap="round"/>`;
+}
+// yeux, joues (class="joue" : retirées du petit logo) et bouche, aux points d'ancrage de la forme
+function visageSVG(f, mood){
+  const r = f.rOeil || 7, rj = f.rJoue || 5;
+  const yeux = f.yeux.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="${ENCRE}" stroke-width="1.5"/><circle cx="${x + r * .21}" cy="${y + 1}" r="${r * .52}" fill="${ENCRE}"/>`).join("");
+  const joues = f.joues.map(([x, y]) => `<circle class="joue" cx="${x}" cy="${y}" r="${rj}" fill="#ff9fb4" opacity=".6"/>`).join("");
+  const bouche = typeof f.bouche === "function" ? f.bouche(mood) : boucheSVG(mood, ...f.bouche);
+  return yeux + joues + bouche;
+}
+// chaque forme : son dessin (sous le visage), ses points d'ancrage (yeux, joues, bouche [x, y, échelle]),
+// le sommet de la tête (chapeaux), les tempes [x gauche, x droite, y] (lunettes, casque) et le cou (nœud)
+const MASCOTTES = {
+  oeuf: {
+    dessin: m => `<path d="M60 12c17 0 30 30 30 56a30 30 0 0 1-60 0c0-26 13-56 30-56z" fill="${m.corps}" stroke="${m.bord}" stroke-width="3"/><ellipse cx="48" cy="36" rx="6" ry="9" fill="#fff" opacity=".9"/>`,
+    yeux: [[49, 64], [71, 64]], joues: [[40, 76], [80, 76]], bouche: [60, 79], sommet: [60, 12], tempes: [31, 89, 62], cou: [60, 95],
+  },
+  elephant: {   // tête ronde, grandes oreilles, trompe ; le cadre passe devant les oreilles, détouré de la couleur du fond
+    dessin: m => {
+      const oreille = (cx, sens) => `<path d="M${cx} 40c${sens * 22}-8 ${sens * 30} 14 ${sens * 24} 36c${-sens * 3} 10 ${-sens * 12} 14 ${-sens * 20} 8z" fill="${m.accent || m.oreilles || m.corps}" stroke="${m.bord}" stroke-width="3" stroke-linejoin="round"/>`;
+      return `${oreille(40, -1)}${oreille(80, 1)}<circle cx="60" cy="62" r="29" fill="${m.corps}" stroke="${m.bord}" stroke-width="3"/><ellipse cx="49" cy="42" rx="7" ry="5" fill="#fff" opacity=".45"/>
+        <path d="M60 70c0 14 0 24 9 27c5 1.5 8-1 7-5" stroke="${m.bord}" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M60 70c0 14 0 24 9 27c5 1.5 8-1 7-5" stroke="${m.corps}" stroke-width="6.5" fill="none" stroke-linecap="round"/>`;
+    },
+    yeux: [[49, 58], [71, 58]], rOeil: 6.5, joues: [[40, 76], [80, 76]], rJoue: 4.5, sommet: [60, 33], tempes: [32, 88, 56], cou: [60, 92],
+    bouche: mood => mood === "sad" ? `<path d="M41 85q6-5 12 0" stroke="${ENCRE}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : mood === "wow" ? `<ellipse cx="47" cy="84" rx="4.5" ry="5.5" fill="${ENCRE}"/>`
+      : `<path d="M40 80q7 8 14 2" stroke="${ENCRE}" stroke-width="3" fill="#fff" stroke-linecap="round"/>`,
+    cadreDevant: true,
+  },
+  chouette: {
+    dessin: m => `<path d="M33 36l-7-20 20 10zM87 36l7-20-20 10z" fill="${m.accent || m.bord}" stroke="${m.bord}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M60 22c20 0 32 16 32 40v14c0 18-14 28-32 28s-32-10-32-28V62c0-24 12-40 32-40z" fill="${m.corps}" stroke="${m.bord}" stroke-width="3"/>
+      <ellipse cx="60" cy="88" rx="17" ry="13" fill="#fff" opacity=".4"/><path d="M50 86q4 3 8 0M62 86q4 3 8 0M56 94q4 3 8 0" stroke="${m.bord}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+      <circle cx="47" cy="58" r="12" fill="#fff" opacity=".55"/><circle cx="73" cy="58" r="12" fill="#fff" opacity=".55"/>`,
+    yeux: [[47, 58], [73, 58]], rOeil: 7.5, joues: [[36, 72], [84, 72]], rJoue: 4.5, sommet: [60, 22], tempes: [29, 91, 58], cou: [60, 101],
+    // l'humeur se lit dans le bec : fermé (happy), ouvert (wow), fermé sous des sourcils froncés (sad)
+    bouche: mood => { const bec = `fill="#F2A93B" stroke="#B9741B" stroke-width="1.5" stroke-linejoin="round"`;
+      if (mood === "wow") return `<path d="M54 67h12l-6 5z" ${bec}/><path d="M55 74h10l-5 6z" ${bec}/><path d="M55.5 72.5h9" stroke="${ENCRE}" stroke-width="2"/>`;
+      return `<path d="M54 67l6 9 6-9z" ${bec}/>` + (mood === "sad" ? `<path d="M38 45l14 4M82 45l-14 4" stroke="${ENCRE}" stroke-width="3" stroke-linecap="round"/>` : ""); },
+  },
+  renard: {
+    dessin: m => `<path d="M60 100c-20 0-34-14-34-34 0-10 3-20 8-28l-4-24 20 12c3-1 7-1 10-1s7 0 10 1l20-12-4 24c5 8 8 18 8 28 0 20-14 34-34 34z" fill="${m.corps}" stroke="${m.bord}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M35 32l-2-11 10 7zM85 32l2-11-10 7z" fill="${m.accent || "#fff"}" opacity=".8"/>
+      <path d="M60 100c-13 0-23-8-25-21 7 5 15 5 25-3 10 8 18 8 25 3-2 13-12 21-25 21z" fill="#fff" opacity=".92"/>
+      <ellipse cx="60" cy="79" rx="4.5" ry="3.2" fill="${ENCRE}"/>`,
+    yeux: [[47, 62], [73, 62]], rOeil: 6.5, joues: [[38, 74], [82, 74]], rJoue: 4.5, bouche: [60, 86, .55], sommet: [60, 30], tempes: [28, 92, 60], cou: [60, 99],
+  },
+  goutte: {
+    dessin: m => `<path d="M60 10c10 18 32 38 32 60a32 32 0 0 1-64 0c0-22 22-42 32-60z" fill="${m.corps}" stroke="${m.bord}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="46" cy="52" rx="5" ry="9" fill="#fff" opacity=".8" transform="rotate(20 46 52)"/>`,
+    yeux: [[49, 68], [71, 68]], joues: [[40, 80], [80, 80]], bouche: [60, 83], sommet: [60, 26], tempes: [30, 90, 66], cou: [60, 99],
+  },
+  livre: {
+    dessin: m => `<rect x="34" y="94" width="56" height="8" rx="3" fill="#fff" stroke="${m.bord}" stroke-width="2.5"/>
+      <rect x="30" y="16" width="60" height="82" rx="8" fill="${m.corps}" stroke="${m.bord}" stroke-width="3"/>
+      <path d="M38 17.5v79" stroke="${m.accent || m.bord}" stroke-width="6" opacity=".7"/>
+      <rect x="50" y="28" width="30" height="8" rx="3" fill="#fff" opacity=".6"/>`,
+    yeux: [[54, 60], [76, 60]], rOeil: 6.5, joues: [[47, 72], [83, 72]], rJoue: 4.5, bouche: [65, 75, .8], sommet: [62, 16], tempes: [31, 91, 58], cou: [62, 104],
+  },
+};
+// accessoires : dessinés aux points d'ancrage de la forme ; « chapeau » : la mascotte rétrécit un peu pour lui faire de la place
+const ACCESSOIRES = {
+  lunettes: { dessin: (f, c) => { const r = (f.rOeil || 7) + 3.5, [[x1, y], [x2]] = f.yeux, [tg, td] = f.tempes;
+    return `<g fill="none" stroke="${ENCRE}" stroke-width="2.5" stroke-linecap="round"><circle cx="${x1}" cy="${y}" r="${r}"/><circle cx="${x2}" cy="${y}" r="${r}"/><path d="M${x1 + r} ${y - 1}q${(x2 - x1 - 2 * r) / 2} -4 ${x2 - x1 - 2 * r} 0M${x1 - r} ${y - 1}L${tg + 1} ${y - 4}M${x2 + r} ${y - 1}L${td - 1} ${y - 4}"/></g>`; } },
+  mortier: { chapeau: true, dessin: (f, c) => { const [x, y] = f.sommet;
+    return `<path d="M${x - 13} ${y - 2}v7c0 3 6 5 13 5s13-2 13-5v-7" fill="${ENCRE}"/><path d="M${x - 26} ${y - 6}L${x} ${y - 16}L${x + 26} ${y - 6}L${x} ${y + 4}z" fill="${ENCRE}"/><path d="M${x} ${y - 6}L${x + 20} ${y - 2}v13" stroke="#F2B705" stroke-width="2" fill="none"/><circle cx="${x + 20}" cy="${y + 12}" r="3" fill="#F2B705"/>`; } },
+  toque: { chapeau: true, dessin: (f, c) => { const [x, y] = f.sommet;
+    return `<g fill="#fff" stroke="${ENCRE}" stroke-width="2"><circle cx="${x - 10}" cy="${y - 12}" r="8"/><circle cx="${x + 10}" cy="${y - 12}" r="8"/><circle cx="${x}" cy="${y - 16}" r="9"/><rect x="${x - 14}" y="${y - 10}" width="28" height="12" rx="3"/></g>`; } },
+  beret: { chapeau: true, dessin: (f, c) => { const [x, y] = f.sommet;
+    return `<ellipse cx="${x + 4}" cy="${y - 2}" rx="21" ry="7" fill="${c}"/><path d="M${x + 4} ${y - 9}v-5" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`; } },
+  casque: { chapeau: true, dessin: (f, c) => { const [tg, td, ty] = f.tempes, sy = f.sommet[1];
+    return `<path d="M${tg + 2} ${ty}C${tg} ${sy - 16} ${td} ${sy - 16} ${td - 2} ${ty}" stroke="${ENCRE}" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="${tg - 6}" y="${ty - 10}" width="11" height="20" rx="5" fill="${c}" stroke="${ENCRE}" stroke-width="2"/><rect x="${td - 5}" y="${ty - 10}" width="11" height="20" rx="5" fill="${c}" stroke="${ENCRE}" stroke-width="2"/>`; } },
+  noeud: { dessin: (f, c) => { const [x, y] = f.cou;
+    return `<path d="M${x} ${y}l-13-8v16zM${x} ${y}l13-8v16z" fill="${c}" stroke="${ENCRE}" stroke-width="2" stroke-linejoin="round"/><circle cx="${x}" cy="${y}" r="3.5" fill="${c}" stroke="${ENCRE}" stroke-width="2"/>`; } },
+};
+let MASCOTTE_FICHIER = null;   // dessin libre (mascotte.fichier), chargé au démarrage
 function mascot(mood = "happy", couleur = "var(--prim)"){
   const m = APP.mascotte;
-  const mouth = mood === "sad" ? `<path d="M51 84q9-7 18 0" stroke="#2a2340" stroke-width="3.5" fill="none" stroke-linecap="round"/>`
-    : mood === "wow" ? `<ellipse cx="60" cy="83" rx="6" ry="7" fill="#2a2340"/>`
-    : `<path d="M49 79q11 11 22 0" stroke="#2a2340" stroke-width="3.5" fill="#fff" stroke-linecap="round"/>`;
-  return `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
-    ${cadreSVG(couleur)}
-    <path d="M60 12c17 0 30 30 30 56a30 30 0 0 1-60 0c0-26 13-56 30-56z" fill="${m.corps}" stroke="${m.bord}" stroke-width="3"/>
-    <ellipse cx="48" cy="36" rx="6" ry="9" fill="#fff" opacity=".9"/>
-    <circle cx="49" cy="64" r="7" fill="#fff" stroke="#2a2340" stroke-width="1.5"/><circle cx="71" cy="64" r="7" fill="#fff" stroke="#2a2340" stroke-width="1.5"/>
-    <circle cx="50.5" cy="65" r="3.6" fill="#2a2340"/><circle cx="72.5" cy="65" r="3.6" fill="#2a2340"/>
-    <circle cx="40" cy="76" r="5" fill="#ff9fb4" opacity=".6"/><circle cx="80" cy="76" r="5" fill="#ff9fb4" opacity=".6"/>
-    ${mouth}</svg>`;
+  if (MASCOTTE_FICHIER) {
+    const svg = MASCOTTE_FICHIER.cloneNode(true);
+    const humeurs = [...svg.querySelectorAll('[id^="humeur-"]')];
+    const garde = humeurs.find(g => g.id === `humeur-${mood}`) || humeurs.find(g => g.id === "humeur-happy");
+    humeurs.forEach(g => { if (g !== garde) g.remove(); });
+    svg.setAttribute("class", "mascot"); svg.setAttribute("aria-hidden", "true");
+    return svg.outerHTML;
+  }
+  const f = MASCOTTES[m.forme] || MASCOTTES.oeuf, acc = ACCESSOIRES[m.accessoire];
+  const corps = f.dessin(m) + visageSVG(f, mood) + (acc ? acc.dessin(f, couleur) : "");
+  const cadre = cadreSVG(couleur, !!f.cadreDevant);
+  return `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">${f.cadreDevant ? "" : cadre}${acc?.chapeau ? `<g transform="translate(6 12) scale(.9)">${corps}</g>` : corps}${f.cadreDevant ? cadre : ""}</svg>`;
+}
+async function chargerMascotte(){
+  if (!APP.mascotte.fichier) return;
+  try {
+    const txt = await (await fetch(APP.mascotte.fichier)).text();
+    const svg = new DOMParser().parseFromString(txt, "image/svg+xml").documentElement;
+    if (svg.nodeName.toLowerCase() === "svg") MASCOTTE_FICHIER = document.importNode(svg, true);
+  } catch(e) { console.warn("mascotte.fichier illisible :", e); }
+  I.logo = logoSVG();
 }
 /* petit logo de la barre du haut : la mascotte, sans les joues */
-const logoSVG = () => mascot("happy").replace('class="mascot"', 'class="logo"').replace(/<circle cx="(40|80)" cy="76"[^>]*\/>/g, "");
+const logoSVG = () => mascot("happy").replace('class="mascot"', 'class="logo"').replace(/<circle class="joue"[^>]*\/>/g, "");
 I.logo = logoSVG();
 
 /* ---------------- sauvegarde ---------------- */

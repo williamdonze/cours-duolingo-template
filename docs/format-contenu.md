@@ -28,8 +28,8 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
     "cours": "Programmation web 2, HEIG-VD, 2025-2026",   // facultatif : le cours officiel (affiché dans le README)
     "site": "https://…github.io/…/",             // facultatif : adresse du site (sinon déduite du dépôt GitHub)
     "accroche": "On part de zéro et on va jusqu'aux exercices de ton cours.",   // première bulle de la mascotte
-    "mascotte": { "nom": "Coco", "cadre": ["{", "}"], "corps": "#FFF6E4", "bord": "#E3C98F" },
-                                                 // cadre : ["{", "}"] (accolades dessinées), deux textes courts (["<?", "?>"], ["$", "_"]), ou []
+    "mascotte": { "nom": "Coco", "forme": "oeuf", "accessoire": "lunettes", "cadre": ["{", "}"], "corps": "#FFF6E4", "bord": "#E3C98F", "accent": "#E3C98F" },
+                                                 // voir « La mascotte » ci-dessous
     "couleurs": {                                // facultatif : jetons de css/app.css à remplacer, en clair et en sombre
       "clair":  { "--prim": "#0E7C86", "--prim-btn": "#0E7C86", "--prim-deep": "#08535A", "--prim-ink": "#0B5E66", "--prim-soft": "#DDF3F4" },
       "sombre": { "--prim": "#3FC1CC", "--prim-btn": "#178F99", "--prim-deep": "#0B5E66", "--prim-ink": "#7FDDE4", "--prim-soft": "#0F3236" }
@@ -47,6 +47,19 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
 ```
 
 Les badges « unité validée » et « boss vaincus » sont **générés automatiquement** pour chaque unité : rien à ajouter. Les badges `premier-pas`, `theoricien`, `sans-faute`, `defi`, `sans-indice`, `serie-3`, `serie-7`, `serie-30` (et, avec du code, `premier-coup`, `codeur`, `chasseur-bugs`) sont attribués par le moteur : garde leurs `id`, change librement leur nom et leur description.
+
+**La mascotte** (`app.mascotte`) : catalogue en image dans `docs/mascottes.png` (`python3 tools/apercu-mascottes.py --catalogue` le redessine).
+
+| champ | valeurs |
+|---|---|
+| `nom` | son prénom (bulles, installation) |
+| `forme` | `oeuf` (défaut), `elephant` (PHP), `chouette` (savoir, droit, lettres), `renard` (malice, stratégie), `goutte` (sciences, chimie, eau), `livre` (théorie, par cœur) |
+| `accessoire` | facultatif : `lunettes`, `mortier` (toque d'étudiant), `toque` (cuisine), `beret` (arts), `casque` (langues, musique), `noeud` |
+| `cadre` | **cours de code seulement** : `["{", "}"]` (accolades dessinées), deux textes courts (`["<?", "?>"]`, `["$", "_"]`) ; `[]` ou absent sinon |
+| `corps`, `bord`, `accent` | couleurs : le corps, le contour, et une couleur secondaire (oreilles, aigrettes, dos du livre) |
+| `fichier` | au lieu d'une forme : un dessin libre, `content/mascotte.svg` (viewBox `0 0 120 120`), avec un groupe par humeur : `<g id="humeur-happy">`, `<g id="humeur-sad">`, `<g id="humeur-wow">` (le reste du dessin est commun) ; les joues en `class="joue"` (retirées du petit logo) |
+
+Pour faire choisir l'élève : écrire 2 ou 3 propositions en JSON et lancer `python3 tools/apercu-mascottes.py propositions.json --sortie apercu.png` (chaque proposition dans ses trois humeurs, sur fond clair et sombre). Une nouvelle forme ou un nouvel accessoire s'ajoute dans `MASCOTTES` / `ACCESSOIRES` (`js/base.js`) et dans `tools/valider-contenu.py`, puis se reporte dans le modèle.
 
 **Le projet du cours** (`projet`, facultatif) : quand le cours a un projet noté à côté des exercices et que l'élève veut l'intégrer, ses critères officiels deviennent une liste à cocher (vue « Projet », ouverte depuis l'accueil), chacun relié aux fiches et à l'unité qui l'enseignent. **Pas de quiz ni de boss sur l'organisation du projet** (« que faut-il faire en premier ? ») : seules ses parties qui s'exercent vraiment deviennent des boss, dans les unités.
 

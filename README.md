@@ -19,7 +19,9 @@ Ensuite :
 
 ## Ce qu'il y a dedans
 
-- **`content/`** : tout le contenu, en JSON (une unité par fichier). La section `app` de `content/config.json` règle le nom, la mascotte, les couleurs et les **modules** (`code-js` pour du JavaScript, `dom` pour des pages web, aucun pour un cours sans code).
+<p align="center"><img src="docs/mascottes.png" width="640" alt="Les mascottes du catalogue : œuf, éléphant, chouette, renard, goutte, livre, avec leurs humeurs, leurs cadres de code et leurs accessoires"></p>
+
+- **`content/`** : tout le contenu, en JSON (une unité par fichier). La section `app` de `content/config.json` règle le nom, la mascotte (forme, accessoire, cadre de code, ou dessin libre), les couleurs et les **modules** (`code-js` pour du JavaScript, `dom` pour des pages web, aucun pour un cours sans code).
 - Deux **unités d'exemple** : « Bien apprendre » (un cours sans code, avec un boss « étude de cas ») et « Catalogue des exercices » (un exemple de chaque type). Elles sont retirées quand on crée un vrai cours.
 - **`docs/format-contenu.md`** : la référence du format ; **`docs/format-memo.md`** : son mémo court. **`docs/modules.md`** : ajouter un langage (PHP, SQL…) ou un terminal simulé. **`docs/feuille-de-route.md`** : les améliorations prévues.
 

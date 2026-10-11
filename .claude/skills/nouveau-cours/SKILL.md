@@ -44,7 +44,9 @@ Après une première lecture des supports, pose **en un seul message** (outil de
    Les deux dernières options se combinent. Dans tous les cas, **jamais** de question sur l'organisation du projet (« que faut-il faire en premier ? ») : ça n'apprend rien.
 3. **Évaluation** : un examen (format : papier, QCM, sur machine) ? une unité « examen blanc » à la fin (questions de toutes les unités, au format de l'examen, sans indice) ?
 4. **Point de départ et difficultés** : ce que l'élève sait déjà (faut-il des unités de prérequis ?) et ce qui lui pose problème.
-5. **Identité** : 2 ou 3 propositions de **nom**, de **mascotte** (nom et forme, adaptés à la matière : le cadre `["{", "}"]`, `["<?", "?>"]`, `["$", "_"]` est réservé au code ; `[]` pour les autres cours) et de **couleur** principale. La **clé** de sauvegarde se déduit du nom (minuscules et tirets, définitive une fois publiée).
+5. **Identité** : 2 ou 3 propositions de **nom**, de **mascotte** et de **couleur** principale. La **clé** de sauvegarde se déduit du nom (minuscules et tirets, définitive une fois publiée).
+   - Mascotte : une forme du catalogue (`docs/mascottes.png` : œuf, éléphant, chouette, renard, goutte, livre) et un accessoire facultatif (lunettes, mortier, toque, béret, casque, nœud), adaptés à la matière. Le **cadre** (`{ }`, `<? ?>`, `$ _`) est réservé aux cours de code. Un dessin libre est possible (`mascotte.fichier`, voir `docs/format-contenu.md`).
+   - Montre les propositions **en image** : écris-les dans un JSON et lance `python3 tools/apercu-mascottes.py propositions.json --sortie apercu-mascottes.png`, puis envoie l'image à l'élève (ou dis-lui de l'ouvrir) avant qu'il choisisse.
 
 ### Profils de cours
 

@@ -30,10 +30,10 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] Vue « Projet » (`config.projet`), validée et testée
 
 ## Lot 4 — mascottes
-- [ ] Catalogue de formes (`"forme"` : œuf, éléphant — repris de ProgServ2 —, chouette, renard, goutte, livre…)
-- [ ] Accessoires sans rapport avec le code (`"accessoire"` : lunettes, toque, stéthoscope…) ; le cadre reste pour le code
-- [ ] Mascotte libre : `content/mascotte.svg` avec des zones nommées pour les humeurs
-- [ ] `/nouveau-cours` propose 3 mascottes adaptées à la matière, en aperçu
+- [x] Catalogue de formes (`"forme"` : œuf, éléphant — repris de ProgServ2 —, chouette, renard, goutte, livre…)
+- [x] Accessoires sans rapport avec le code (`"accessoire"` : lunettes, mortier, toque, béret, casque, nœud) ; le cadre reste pour le code
+- [x] Mascotte libre : `content/mascotte.svg` avec des zones nommées pour les humeurs
+- [x] `/nouveau-cours` propose 3 mascottes adaptées à la matière, en aperçu (`tools/apercu-mascottes.py`) ; catalogue en image : `docs/mascottes.png`
 
 ## Lot 5 — langages
 - [ ] Socle commun à tous les langages : éditeur, coloration selon le langage, banc d'essai, tests, indices, diagnostics, outils de test ; un langage = un petit fichier (exécuter + traduire les erreurs)

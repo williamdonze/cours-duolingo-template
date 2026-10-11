@@ -25,7 +25,7 @@ Aucune dépendance, aucun build. `fetch()` et les Web Workers exigent un serveur
 ```
 index.html                 Coquille : charge css/app.css et les scripts js/ dans l'ordre (titre et icône écrits par tools/configurer.py)
 css/app.css                Tout le style ; jetons de couleur dans :root, redéfinis en sombre (2 blocs) ; config.app.couleurs les surcharge
-js/base.js                 APP (identité, depuis config.app), utilitaires, icônes, mascotte, sauvegarde, progression, répétition espacée,
+js/base.js                 APP (identité, depuis config.app), utilitaires, icônes, mascottes (catalogue, accessoires), sauvegarde, progression, répétition espacée,
                            toasts, modale, appli sur l'écran d'accueil (iOS / Android), affichage du code, executer() (worker, 2 s), texte enrichi, fiches, illustrations
 js/questions.js            Moteur d'exercices : Q[type] pour les 23 types
 js/app.js                  runSession, leçons / jeux / quiz / boss (code ou étude de cas), défi du jour, vues, démarrage
@@ -95,13 +95,14 @@ python3 tools/tester-exercices.py       # dans Chromium : chaque solution passe,
 python3 tools/test-parcours.py          # tout le parcours par l'interface, défi du jour, vues, sauvegarde (--captures)
 python3 tools/configurer.py             # après un changement de config.app : index.html, manifest, sw.js, icônes, README (--sans-icones)
 python3 tools/valider-contenu.py --fiches   # + la liste des fiches par unité (pour s'y relier)
+python3 tools/apercu-mascottes.py --catalogue   # docs/mascottes.png ; avec un JSON de propositions : l'aperçu à montrer à l'élève
 ```
 
 GitHub Actions (`.github/workflows/tests.yml`) lance les trois tests à chaque push.
 
 ## Design
 
-- Mode Duolingo de Pampre : boutons « 3D », nœuds ronds en zigzag, feuille de correction verte / rouge qui monte du bas, mascotte (un œuf souriant dans le « cadre » du cours).
+- Mode Duolingo de Pampre : boutons « 3D », nœuds ronds en zigzag, feuille de correction verte / rouge qui monte du bas, mascotte du cours : une forme du catalogue (`MASCOTTES` dans `js/base.js` : œuf, éléphant, chouette, renard, goutte, livre), un accessoire (`ACCESSOIRES`), un « cadre » pour les cours de code, ou un dessin libre (`mascotte.fichier`). Catalogue en image : `docs/mascottes.png`. Ce qui est propre à un cours se décrit dans `config.json`, jamais en code dans `js/base.js`.
 - Jetons CSS dans `:root`, redéfinis pour le sombre dans `@media (prefers-color-scheme: dark)` **et** `:root[data-theme="dark"]` : toute nouvelle couleur doit exister dans les trois blocs (et `config.app.couleurs` a un bloc `clair` et un bloc `sombre`).
 - Appli installable : sur téléphone (jamais sur ordinateur ni en `?test`), une fenêtre propose l'ajout à l'écran d'accueil après la première leçon (invite native sur Android, mode d'emploi selon le navigateur sur iOS), puis 14 jours après chaque « plus tard » ; toujours accessible dans Profil.
 - Mobile d'abord (colonne de 680 px), zones tactiles ≥ 44 px, police de code à 16 px dans l'éditeur au doigt, pas de ligatures dans le code.

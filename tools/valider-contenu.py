@@ -40,6 +40,18 @@ APP = config.get("app", {})
 for k in ["nom", "cle", "description"]:
     if not APP.get(k): E(f"config.json : app.{k} manquant")
 if APP.get("cle") and not re.fullmatch(r"[a-z0-9-]+", APP["cle"]): E("config.json : app.cle en minuscules, chiffres et tirets (elle nomme la sauvegarde : ne plus la changer ensuite)")
+# mascotte : une forme du catalogue (MASCOTTES dans js/base.js), un accessoire (ACCESSOIRES), ou un dessin libre (fichier)
+FORMES = {"oeuf", "elephant", "chouette", "renard", "goutte", "livre"}
+ACCESSOIRES = {"lunettes", "mortier", "toque", "beret", "casque", "noeud"}
+MASC = APP.get("mascotte", {})
+if MASC.get("fichier"):
+    if not (RACINE / MASC["fichier"]).exists(): E(f"config.json : mascotte.fichier introuvable ({MASC['fichier']})")
+    elif 'id="humeur-' not in (RACINE / MASC["fichier"]).read_text(encoding="utf-8"): W("config.json : mascotte.fichier sans groupes id=\"humeur-happy\" / \"humeur-sad\" / \"humeur-wow\" (une seule humeur)")
+else:
+    if MASC.get("forme", "oeuf") not in FORMES: E(f"config.json : mascotte.forme inconnue « {MASC.get('forme')} » (connues : {', '.join(sorted(FORMES))})")
+    if MASC.get("accessoire") and MASC["accessoire"] not in ACCESSOIRES: E(f"config.json : mascotte.accessoire inconnu « {MASC['accessoire']} » (connus : {', '.join(sorted(ACCESSOIRES))})")
+    for k in ["nom", "corps", "bord"]:
+        if not MASC.get(k): E(f"config.json : mascotte.{k} manquant")
 MODULES = set(APP.get("modules", []))
 for m in MODULES - MODULES_CONNUS: E(f"config.json : module inconnu « {m} » (connus : {', '.join(sorted(MODULES_CONNUS))})")
 
