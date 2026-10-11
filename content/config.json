@@ -35,8 +35,8 @@
     { "id": "serie-3", "nom": "Trois jours de suite", "desc": "Une série de 3 jours", "icone": "flamme" },
     { "id": "serie-7", "nom": "Une semaine", "desc": "Une série de 7 jours", "icone": "flamme" },
     { "id": "serie-30", "nom": "Un mois", "desc": "Une série de 30 jours", "icone": "flamme" },
-    { "id": "premier-coup", "nom": "Du premier coup", "desc": "Réussir 10 exercices de code au premier essai (module code-js)", "icone": "cible" },
-    { "id": "codeur", "nom": "Ça compile", "desc": "Réussir 25 exercices de code (module code-js)", "icone": "accolades" },
+    { "id": "premier-coup", "nom": "Du premier coup", "desc": "Réussir 10 exercices de code au premier essai", "icone": "cible", "module": "code-js" },
+    { "id": "codeur", "nom": "Ça compile", "desc": "Réussir 25 exercices de code", "icone": "accolades", "module": "code-js" },
     { "id": "chasseur-bugs", "nom": "Chasseur de bugs", "desc": "Trouver 10 bugs (ligne et explication)", "icone": "bug" },
     { "id": "memoire", "nom": "Mémoire d'éléphant", "desc": "8/10 ou plus au jeu « Vrai ou faux ? » de l'unité 1", "icone": "cible" }
   ]

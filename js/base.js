@@ -147,13 +147,13 @@ function gainXP(n){
   if (after.nom !== before.nom) toast(I.star, `Nouveau rang : ${after.nom}`, `${fmt(ST.xp)} XP au compteur.`);
   checkBadges(); save(); renderTop();
 }
-/* badges : ceux de config.json + un badge par unité (quiz) et un par unité (tous ses boss), générés depuis les unités */
+/* badges : ceux de config.json (sauf ceux d'un module absent : "module": "code-js") + un badge par unité (quiz) et un par unité (tous ses boss), générés depuis les unités */
 function tousLesBadges(){
   const parUnite = D.unites.flatMap(u => [
     { id:`unite-${u.id}`, nom:`${u.titre} : validé`, desc:`Valider le quiz de l'unité ${u.numero}`, icone:u.badgeIcone || "medaille" },
     ...(u.boss?.length ? [{ id:`boss-${u.id}`, nom:`Boss vaincu : ${u.titre}`, desc:`Réussir ${u.boss.length > 1 ? `les ${u.boss.length} boss` : "le boss"} de l'unité ${u.numero}`, icone:"boss" }] : [])
   ]);
-  return [...D.config.badges, ...parUnite];
+  return [...D.config.badges.filter(b => !b.module || aModule(b.module)), ...parUnite];
 }
 function award(id){
   if (ST.badges[id]) return;

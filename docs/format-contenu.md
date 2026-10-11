@@ -39,7 +39,7 @@ Après chaque modification : `python3 tools/valider-contenu.py` (rapide, sans na
   "unites": ["content/unites/u01-bases.json", …], // ordre du parcours ; GitHub Pages ne sait pas lister un dossier, d'où cette liste
   "aVenir": [{ "titre": "…", "resume": "…", "icone": "…" }],   // cartes « Bientôt » en bas de l'accueil
   "rangs": [{ "xp": 0, "nom": "Débutant" }, …],
-  "badges": [{ "id": "…", "nom": "…", "desc": "…", "icone": "etoile" }]   // icônes : etoile, flamme, medaille, trophee, boss, oeuf, livre, cible, accolades, porte, bug, terminal, melange
+  "badges": [{ "id": "…", "nom": "…", "desc": "…", "icone": "etoile", "module": "code-js" }]   // "module" (facultatif) : badge masqué si ce module n'est pas activé ; icônes : etoile, flamme, medaille, trophee, boss, oeuf, livre, cible, accolades, porte, bug, terminal, melange
 }
 ```
 

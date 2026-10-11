@@ -37,6 +37,7 @@ content/pages/             Pages web des exercices DOM (module dom)
 tools/                     Tests et outils (voir « Tests »), configurer.py, build-icones.py
 docs/format-contenu.md     LA référence du format du contenu (config, tous les types, tests, diagnostics, boss)
 docs/modules.md            Les modules, et comment en ajouter un (PHP, terminal…)
+docs/feuille-de-route.md   Les améliorations prévues du modèle, par lots (à cocher)
 .claude/skills/nouveau-cours/   La procédure « créer l'appli d'un nouveau cours »
 manifest.webmanifest, sw.js, icones/   Appli installable, hors connexion (configurer.py change le nom du cache)
 ```

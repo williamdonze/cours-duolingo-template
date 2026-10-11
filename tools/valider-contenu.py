@@ -45,6 +45,7 @@ unites, ids_q, ids_fiche, ids_unite, ids_badge = [], {}, {}, set(), set()
 for b in config.get("badges", []):
     if b["id"] in ids_badge: E(f"badge en double : {b['id']}")
     ids_badge.add(b["id"])
+    if b.get("module") and b["module"] not in MODULES_CONNUS: E(f"badge {b['id']} : module inconnu « {b['module']} »")
 for chemin in config.get("unites", []):
     f = RACINE / chemin
     if not f.exists(): E(f"{chemin} : fichier introuvable"); continue

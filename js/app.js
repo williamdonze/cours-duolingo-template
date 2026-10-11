@@ -327,8 +327,8 @@ function viewDefi(){
   el.appendChild(h(`<div class="kpis" style="margin-top:16px">
     <div class="kpi" style="color:var(--gold-ink)">${I.star}<div><b style="color:var(--ink)">${jours}</b><span>défi${jours > 1 ? "s" : ""} relevé${jours > 1 ? "s" : ""}</span></div></div>
     <div class="kpi" style="color:var(--flame-ink)">${I.flame}<div><b style="color:var(--ink)">${streakNow()}</b><span>jours de série</span></div></div>
-    <div class="kpi" style="color:var(--prim-ink)">${I.braces}<div><b style="color:var(--ink)">${Object.values(ST.notions).filter(n => n.b >= 4).length}</b><span>notions solides</span></div></div>
-    <div class="kpi" style="color:var(--ko-ink)">${I.bug}<div><b style="color:var(--ink)">${dues.length}</b><span>notions à revoir</span></div></div></div>`));
+    <div class="kpi" style="color:var(--prim-ink)">${I.medal}<div><b style="color:var(--ink)">${Object.values(ST.notions).filter(n => n.b >= 4).length}</b><span>notions solides</span></div></div>
+    <div class="kpi" style="color:var(--ko-ink)">${I.book}<div><b style="color:var(--ink)">${dues.length}</b><span>notions à revoir</span></div></div></div>`));
   return el;
 }
 
@@ -441,10 +441,11 @@ function preparerUnite(u, i){
   if (!u.parcours) u.parcours = [...u.lecons.map(l => l.id), ...u.jeux.map(g => `jeu:${g.id}`), "quiz", ...u.boss.map(b => `boss:${b.id}`)];
 }
 async function boot(){
-  $app.innerHTML = `<main class="wrap" style="text-align:center;padding-top:80px">${mascot("happy")}<p style="font-weight:800;color:var(--muted)">Chargement des unités…</p></main>`;
+  // avant config.json : l'écran de chargement écrit dans index.html par tools/configurer.py (déjà à la bonne mascotte)
   try {
     D.config = await getJSON("content/config.json");
     appliquerApp(D.config.app);
+    $app.innerHTML = `<main class="wrap chargement">${mascot("happy")}<p>Chargement des unités…</p></main>`;
     D.unites = await Promise.all(D.config.unites.map(getJSON));
   } catch(err) {
     $app.innerHTML = `<main class="wrap" style="padding-top:60px"><h2>Le contenu n'a pas pu être chargé</h2>
