@@ -46,3 +46,4 @@ Améliorations décidées après la création de ProgServ2 (https://github.com/w
 - [x] Profil : la mascotte ne repousse plus le texte ; pointes de la bulle et de l'étiquette « Continuer » redessinées
 - [x] Accueil : replier une unité d'un clic sur sa bannière (unités terminées repliées par défaut), bouton « Reprendre » vers l'étape en cours
 - [x] Étape en cours : un boss sauté ne retient plus « Continuer » ni « Reprendre » ; un boss ne bloque plus les étapes qui le suivent
+- [x] Bac à sable DOM (TP 4 de ProgWeb 2, délégation d'événements) : modules fournis importables (`dom.fichiers`, la bibliothèque du prof), formulaires (`allow-forms`, actions `saisir`, `entree`, `soumettre`, envoi sans `preventDefault` détecté), `confirm` (vrai dialogue dans l'aperçu, réponses simulées dans les tests) ; exemple dans `u02-catalogue`

@@ -668,6 +668,166 @@
             }
           ],
           "explication": "Sans `#`, le sélecteur cherche une balise <HEART-ACE> : il ne trouve rien (null)."
+        },
+        {
+          "id": "u02-dom-formulaire",
+          "type": "ecrire",
+          "notions": [
+            "catalogue-dom"
+          ],
+          "question": "Exemple (formulaire, module importé, `confirm`) : à l'envoi du formulaire `#ajout`, ajoute le texte du champ `#texte` dans la liste `#liste` avec `addLine` (sans recharger la page), puis vide le champ. Le bouton `#vider` vide la liste, **seulement** si l'utilisateur confirme.",
+          "dom": {
+            "html": [
+              "<form id=\"ajout\"><input id=\"texte\" required><button>Ajouter</button></form>",
+              "<ul id=\"liste\"></ul>",
+              "<button id=\"vider\" type=\"button\">Vider</button>"
+            ],
+            "css": [
+              "body{font-family:system-ui;padding:12px}"
+            ],
+            "fichiers": {
+              "exemple-outils.js": "content/pages/exemple-outils.js"
+            }
+          },
+          "depart": [
+            "import { getNode, addLine } from './exemple-outils.js';",
+            "",
+            ""
+          ],
+          "tests": {
+            "etapes": [
+              {
+                "titre": "Le bouton Ajouter",
+                "actions": [
+                  {
+                    "saisir": [
+                      "#texte",
+                      "pain"
+                    ]
+                  },
+                  {
+                    "clic": "#ajout button"
+                  }
+                ],
+                "verifier": [
+                  {
+                    "compter": "#liste li",
+                    "egal": 1,
+                    "libelle": "Lignes dans la liste"
+                  },
+                  {
+                    "vrai": "document.querySelector('#liste li')?.textContent === 'pain'",
+                    "message": "La ligne doit contenir le texte saisi."
+                  },
+                  {
+                    "vrai": "document.querySelector('#texte').value === ''",
+                    "message": "Le champ doit être vidé après l'ajout."
+                  }
+                ]
+              },
+              {
+                "titre": "La touche Entrée",
+                "actions": [
+                  {
+                    "saisir": [
+                      "#texte",
+                      "lait"
+                    ]
+                  },
+                  {
+                    "entree": "#texte"
+                  }
+                ],
+                "verifier": [
+                  {
+                    "compter": "#liste li",
+                    "egal": 2,
+                    "libelle": "Lignes dans la liste"
+                  }
+                ]
+              },
+              {
+                "titre": "Vider, puis Annuler",
+                "actions": [
+                  {
+                    "confirm": false
+                  },
+                  {
+                    "clic": "#vider"
+                  }
+                ],
+                "verifier": [
+                  {
+                    "vrai": "window.__confirms.length === 1",
+                    "message": "Il faut demander confirmation avec confirm(…) avant de vider."
+                  },
+                  {
+                    "compter": "#liste li",
+                    "egal": 2,
+                    "libelle": "Lignes après « Annuler »"
+                  }
+                ],
+                "siEchec": "Si l'utilisateur annule, `confirm` retourne false : la liste ne doit pas bouger."
+              },
+              {
+                "titre": "Vider, puis OK",
+                "actions": [
+                  {
+                    "clic": "#vider"
+                  }
+                ],
+                "verifier": [
+                  {
+                    "compter": "#liste li",
+                    "egal": 0,
+                    "libelle": "Lignes après « OK »"
+                  }
+                ]
+              }
+            ],
+            "obligatoire": [
+              "preventDefault",
+              "addEventListener"
+            ]
+          },
+          "indices": [
+            "L'événement d'un formulaire envoyé s'appelle submit ; preventDefault() empêche le rechargement.",
+            "confirm(…) retourne true (OK) ou false (Annuler).",
+            {
+              "code": "getNode('#ajout').addEventListener('submit', (event) => {\n  event.___();\n  addLine(___, ___);\n});"
+            }
+          ],
+          "solution": [
+            "import { getNode, addLine } from './exemple-outils.js';",
+            "",
+            "getNode('#ajout').addEventListener('submit', (event) => {",
+            "  event.preventDefault();",
+            "  addLine(getNode('#liste'), getNode('#texte').value);",
+            "  getNode('#texte').value = '';",
+            "});",
+            "",
+            "getNode('#vider').addEventListener('click', () => {",
+            "  if (confirm('Vider la liste ?')) {",
+            "    getNode('#liste').replaceChildren();",
+            "  }",
+            "});"
+          ],
+          "erreursTypiques": [
+            {
+              "code": "import { getNode, addLine } from './exemple-outils.js';\ngetNode('#ajout').addEventListener('submit', (event) => {\n  addLine(getNode('#liste'), getNode('#texte').value);\n  getNode('#texte').value = '';\n});\ngetNode('#vider').addEventListener('click', () => { if (confirm('Vider ?')) getNode('#liste').replaceChildren(); });\n// event.preventDefault",
+              "attendu": "echec"
+            },
+            {
+              "code": "import { getNode, addLine } from './outils.js';\ngetNode('#ajout').addEventListener('submit', (event) => { event.preventDefault(); addLine(getNode('#liste'), getNode('#texte').value); });",
+              "attendu": "erreur"
+            },
+            {
+              "code": "import { getNode, addLine } from './exemple-outils.js';\ngetNode('#ajout').addEventListener('submit', (event) => {\n  event.preventDefault();\n  addLine(getNode('#liste'), getNode('#texte').value);\n  getNode('#texte').value = '';\n});\ngetNode('#vider').addEventListener('click', () => getNode('#liste').replaceChildren());",
+              "attendu": "echec",
+              "diagnostic": "contenu"
+            }
+          ],
+          "explication": "Trois mécaniques du bac à sable DOM : un module fourni (`dom.fichiers`), un formulaire (actions `saisir`, `entree`, `clic` ; un envoi sans `preventDefault` est signalé automatiquement) et `confirm` (réponses simulées par `{ \"confirm\": false }`)."
         }
       ]
     }
