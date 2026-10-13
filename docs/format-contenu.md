@@ -292,7 +292,7 @@ Le Web Worker n'a pas de DOM. Avec un champ `dom`, le code de l'élève tourne d
 
 - `"dom": { "page": "cards" }` : `content/pages/cards.html` (le contenu du `<body>`) et `content/pages/cards.css`.
 - `"dom": { "html": ["<button id=\"plus\">+1</button>"], "css": ["…"] }` : une petite page écrite dans l'exercice.
-- `"fichiers": { "dom.js": "content/pages/dom.js" }` (dans `dom`) : des **modules que le code de l'élève peut importer**, comme la bibliothèque fournie par le prof (`import { getNode } from './dom.js';`, avec ou sans `./`). Un nom de fichier faux donne « Fichier à importer introuvable » avec le bon nom.
+- `"fichiers": { "dom.js": "content/pages/dom.js" }` (dans `dom`) : des **modules que le code de l'élève peut importer**, comme la bibliothèque fournie par le prof (`import { getNode } from './dom.js';` ; sans le `./`, l'import échoue comme dans un vrai navigateur). Un nom de fichier faux donne « Fichier à importer introuvable » avec le bon nom.
 
 « Exécuter » affiche la page sous le code : l'élève clique lui-même, la console se remplit au fil des clics. « Vérifier » rejoue les **étapes** dans une page cachée :
 

@@ -47,12 +47,13 @@
     // "exposer": ["clearSelection"] : les fonctions du module, rendues visibles aux scripts des tests (window.__pw.clearSelection())
     const noms = (tests && tests.exposer) || [];
     const expo = noms.length ? `\n;window.__pw = { ${noms.map(n => `${n}: typeof ${n} === "undefined" ? undefined : ${n}`).join(", ")} };` : "";
-    // les modules fournis (dom.fichiers) : import … from './dom.js' pointe vers leur copie (même nombre de lignes : les erreurs gardent leur ligne)
+    // les modules fournis (dom.fichiers) : import … from './dom.js' pointe vers leur copie (même nombre de lignes : les erreurs gardent leur ligne) ;
+    // sans « ./ » ('dom.js'), le navigateur refuse l'import, comme dans un vrai projet : l'élève voit la même erreur que chez lui
     let source = code;
     for (const [nom, texte] of Object.entries(fichiers)) {
       const u = URL.createObjectURL(new Blob([texte + `\n//# sourceURL=${nom}`], { type:"text/javascript" }));
       const n = nom.replace(/^\.\//, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      source = source.replace(new RegExp(`(\\bfrom\\s*|\\bimport\\s*\\(?\\s*)(['"\`])(?:\\.\\/)?${n}\\2`, "g"), `$1"${u}"`);
+      source = source.replace(new RegExp(`(\\bfrom\\s*|\\bimport\\s*\\(?\\s*)(['"\`])\\.\\/${n}\\2`, "g"), `$1"${u}"`);
     }
     const url = URL.createObjectURL(new Blob([source + expo + "\n//# sourceURL=eleve.js"], { type:"text/javascript" }));
     try { await import(url); } catch(err) {
